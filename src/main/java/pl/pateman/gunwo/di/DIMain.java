@@ -1,5 +1,7 @@
 package pl.pateman.gunwo.di;
 
+import pl.pateman.gunwo.di.test.SomeOtherComponent;
+
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +11,9 @@ public class DIMain
    {
       PackageScanner packageScanner = new PackageScanner();
       List<Class<?>> scannedClasses = packageScanner.getClasses("pl.pateman.gunwo.di");
-      Map<String, Class<?>> wireComponents = WireComponentDiscovery.findWireComponents(scannedClasses);
-      System.out.println(wireComponents);
+      WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
+      WiringContext wiringContext = new WiringContext(wireComponentInfoResolver, scannedClasses);
+      SomeOtherComponent wireComponent = wiringContext.getWireComponent(SomeOtherComponent.class);
+      String w = "";
    }
 }

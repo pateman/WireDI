@@ -1,0 +1,13 @@
+package pl.pateman.gunwo.di;
+
+import java.lang.reflect.Field;
+
+class WireFieldInjectionInfo {
+    private final Field field;
+    private final String wireName;
+
+    WireFieldInjectionInfo(Field field, String wireName) {
+        this.field = field;
+        this.wireName = wireName;
+    }
+}
