@@ -10,4 +10,12 @@ class WireFieldInjectionInfo {
         this.field = field;
         this.wireName = wireName;
     }
+
+    Field getField() {
+        return field;
+    }
+
+    String getWireName() {
+        return wireName;
+    }
 }

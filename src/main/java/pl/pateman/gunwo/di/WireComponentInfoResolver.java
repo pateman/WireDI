@@ -3,12 +3,14 @@ package pl.pateman.gunwo.di;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WireComponentInfoResolver {
 
@@ -50,6 +52,19 @@ public class WireComponentInfoResolver {
         return fields;
     }
 
+    private List<Method> getSetters(Class<?> clz) {
+        List<Method> setters = new ArrayList<>();
+        while (clz != Object.class) {
+            Stream
+                    .of(clz.getDeclaredMethods())
+                    .filter(mtd -> mtd.getName().startsWith("set"))
+                    .filter(mtd -> mtd.getParameterCount() == 1)
+                    .forEach(setters::add);
+            clz = clz.getSuperclass();
+        }
+        return setters;
+    }
+
     private void determineFieldInjection(WireComponentInfo wireComponentInfo) {
         Class<?> clz = wireComponentInfo.getClz();
         List<Field> fields = getFields(clz);
@@ -66,9 +81,26 @@ public class WireComponentInfoResolver {
         wireComponentInfo.addFieldInjectionInfo(wireFieldInjectionInfoList);
     }
 
+    private void determineSetterInjection(WireComponentInfo wireComponentInfo) {
+        Class<?> clz = wireComponentInfo.getClz();
+        List<Method> setters = getSetters(clz);
+
+        if (setters.isEmpty()) {
+            return;
+        }
+
+        List<WireSetterInjectionInfo> setterInjectionInfoList = setters
+                .stream()
+                .filter(m -> m.isAnnotationPresent(Wire.class))
+                .map(m -> new WireSetterInjectionInfo(m, WireNameResolver.resolve(m)))
+                .collect(Collectors.toList());
+        wireComponentInfo.addSetterInjectionInfo(setterInjectionInfoList);
+    }
+
     private void fillWireComponentInfo(WireComponentInfo wireComponentInfo) {
         determineConstructorInjection(wireComponentInfo);
         determineFieldInjection(wireComponentInfo);
+        determineSetterInjection(wireComponentInfo);
     }
 
     private WireComponentInfo resolveWireComponentInfo(Class<?> componentClass) {

@@ -2,6 +2,7 @@ package pl.pateman.gunwo.di;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 final class WireNameResolver {
     private WireNameResolver() {
@@ -32,5 +33,14 @@ final class WireNameResolver {
         }
 
         return clz.getCanonicalName();
+    }
+
+    static String resolve(Method setter) {
+        Wire annotation = setter.getAnnotation(Wire.class);
+        if (annotation != null && !annotation.name().isEmpty()) {
+            return annotation.name();
+        }
+
+        return setter.getParameters()[0].getType().getCanonicalName();
     }
 }

@@ -10,8 +10,15 @@ public class SomeOtherComponent
 {
    private SomeComponent someComponent;
 
-   @Wire
+   public SomeOtherComponent() {
+   }
+
    public SomeOtherComponent(SomeComponent someComponent) {
+      this.someComponent = someComponent;
+   }
+
+   @Wire
+   public void setSomeComponent(SomeComponent someComponent) {
       this.someComponent = someComponent;
    }
 }

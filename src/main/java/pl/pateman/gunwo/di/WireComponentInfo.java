@@ -10,15 +10,21 @@ class WireComponentInfo {
     private final boolean multipleAllowed;
     private WireConstructorInjectionInfo constructorInjectionInfo;
     private final List<WireFieldInjectionInfo> fieldInjectionInfo;
+    private final List<WireSetterInjectionInfo> setterInjectionInfo;
 
     WireComponentInfo(Class<?> clz, boolean multipleAllowed) {
         this.clz = clz;
         this.multipleAllowed = multipleAllowed;
         fieldInjectionInfo = new ArrayList<>();
+        setterInjectionInfo = new ArrayList<>();
     }
 
     Class<?> getClz() {
         return clz;
+    }
+
+    boolean isMultipleAllowed() {
+        return multipleAllowed;
     }
 
     boolean hasConstructorInjection() {
@@ -35,5 +41,17 @@ class WireComponentInfo {
 
     void addFieldInjectionInfo(Collection<WireFieldInjectionInfo> collection) {
         fieldInjectionInfo.addAll(collection);
+    }
+
+    List<WireFieldInjectionInfo> getFieldInjectionInfo() {
+        return fieldInjectionInfo;
+    }
+
+    void addSetterInjectionInfo(Collection<WireSetterInjectionInfo> collection) {
+        setterInjectionInfo.addAll(collection);
+    }
+
+    List<WireSetterInjectionInfo> getSetterInjectionInfo() {
+        return setterInjectionInfo;
     }
 }
