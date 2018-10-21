@@ -3,22 +3,20 @@ package pl.pateman.gunwo.di.test;
 import pl.pateman.gunwo.di.Wire;
 import pl.pateman.gunwo.di.WireComponent;
 
-import javax.annotation.Resource;
-
 @WireComponent(name = "someOtherComponent")
 public class SomeOtherComponent
 {
-   private SomeComponent someComponent;
+   private TestableComponent someComponent;
 
    public SomeOtherComponent() {
    }
 
-   public SomeOtherComponent(SomeComponent someComponent) {
+   public SomeOtherComponent(TestableComponent someComponent) {
       this.someComponent = someComponent;
    }
 
    @Wire
-   public void setSomeComponent(SomeComponent someComponent) {
+   public void setSomeComponent(TestableComponent someComponent) {
       this.someComponent = someComponent;
    }
 }

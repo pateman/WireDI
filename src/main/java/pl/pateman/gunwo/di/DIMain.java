@@ -12,7 +12,9 @@ public class DIMain
       List<Class<?>> scannedClasses = packageScanner.getClasses("pl.pateman.gunwo.di");
       WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
       WireComponentFactory wireComponentFactory = new WireComponentFactory();
-      WiringContext wiringContext = new WiringContext(wireComponentInfoResolver, wireComponentFactory, scannedClasses);
+      WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
+      WiringContext wiringContext = new WiringContext(wireComponentInfoResolver, wireComponentFactory,
+              wireComponentRegistry, scannedClasses);
       SomeOtherComponent wireComponent = wiringContext.getWireComponent(SomeOtherComponent.class);
       String w = "";
    }
