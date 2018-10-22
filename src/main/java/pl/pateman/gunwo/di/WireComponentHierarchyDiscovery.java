@@ -19,21 +19,22 @@ public final class WireComponentHierarchyDiscovery {
         return container;
     }
 
-    public static Map<Class<?>, Set<Class<?>>> findHierarchy(Map<String, Class<?>> components) {
-        Collection<Class<?>> componentClasses = components.values();
+    public static Map<String, Set<String>> findHierarchy(Map<String, Class<?>> components) {
+        Map<String, Set<String>> result = new HashMap<>();
+        for (Map.Entry<String, Class<?>> componentEntry : components.entrySet()) {
+            Class<?> componentClass = componentEntry.getValue();
+            String componentName = componentEntry.getKey();
 
-        Map<Class<?>, Set<Class<?>>> result = new HashMap<>();
-        for (Class<?> componentClass : componentClasses) {
             Class<?>[] interfaces = componentClass.getInterfaces();
             for (Class<?> anInterface : interfaces) {
-                Set<Class<?>> classes = result.computeIfAbsent(anInterface, (k) -> new HashSet<>());
-                classes.add(componentClass);
+                Set<String> classes = result.computeIfAbsent(anInterface.getCanonicalName(), (k) -> new HashSet<>());
+                classes.add(componentName);
             }
 
             List<Class<?>> hierarchy = computeHierarchy(componentClass);
             for (Class<?> aClass : hierarchy) {
-                Set<Class<?>> classes = result.computeIfAbsent(aClass, (k) -> new HashSet<>());
-                classes.add(componentClass);
+                Set<String> classes = result.computeIfAbsent(aClass.getCanonicalName(), (k) -> new HashSet<>());
+                classes.add(componentName);
             }
         }
         return result;

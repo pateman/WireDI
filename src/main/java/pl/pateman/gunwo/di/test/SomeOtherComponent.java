@@ -2,6 +2,7 @@ package pl.pateman.gunwo.di.test;
 
 import pl.pateman.gunwo.di.Wire;
 import pl.pateman.gunwo.di.WireComponent;
+import pl.pateman.gunwo.di.WireName;
 
 @WireComponent(name = "someOtherComponent")
 public class SomeOtherComponent
@@ -16,7 +17,7 @@ public class SomeOtherComponent
    }
 
    @Wire
-   public void setSomeComponent(TestableComponent someComponent) {
+   public void setSomeComponent(@WireName("another") TestableComponent someComponent) {
       this.someComponent = someComponent;
    }
 }

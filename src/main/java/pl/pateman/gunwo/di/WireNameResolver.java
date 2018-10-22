@@ -3,6 +3,7 @@ package pl.pateman.gunwo.di;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 final class WireNameResolver {
     private WireNameResolver() {
@@ -36,11 +37,11 @@ final class WireNameResolver {
     }
 
     static String resolve(Method setter) {
-        Wire annotation = setter.getAnnotation(Wire.class);
-        if (annotation != null && !annotation.name().isEmpty()) {
-            return annotation.name();
+        Parameter parameter = setter.getParameters()[0];
+        WireName annotation = parameter.getAnnotation(WireName.class);
+        if (annotation != null && !annotation.value().isEmpty()) {
+            return annotation.value();
         }
-
-        return setter.getParameters()[0].getType().getCanonicalName();
+        return parameter.getType().getCanonicalName();
     }
 }

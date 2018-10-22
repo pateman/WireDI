@@ -1,5 +1,6 @@
 package pl.pateman.gunwo.di;
 
+import pl.pateman.gunwo.di.test.SomeComponent;
 import pl.pateman.gunwo.di.test.SomeOtherComponent;
 
 import java.util.List;
@@ -15,7 +16,12 @@ public class DIMain
       WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
       WiringContext wiringContext = new WiringContext(wireComponentInfoResolver, wireComponentFactory,
               wireComponentRegistry, scannedClasses);
-      SomeOtherComponent wireComponent = wiringContext.getWireComponent(SomeOtherComponent.class);
+      SomeOtherComponent wireComponent1 = wiringContext.getWireComponent(SomeOtherComponent.class);
+      SomeOtherComponent wireComponent2 = wiringContext.getWireComponent(SomeOtherComponent.class);
+
+      SomeComponent inst1 = wiringContext.getWireComponent(SomeComponent.class);
+      SomeComponent inst2 = wiringContext.getWireComponent(SomeComponent.class);
+
       String w = "";
    }
 }
