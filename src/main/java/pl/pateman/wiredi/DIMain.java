@@ -1,7 +1,7 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
-import pl.pateman.gunwo.di.test.SomeComponent;
-import pl.pateman.gunwo.di.test.SomeOtherComponent;
+import pl.pateman.wiredi.test.SomeComponent;
+import pl.pateman.wiredi.test.SomeOtherComponent;
 
 import java.util.List;
 

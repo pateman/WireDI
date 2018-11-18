@@ -1,6 +1,6 @@
-package pl.pateman.gunwo.di.test;
+package pl.pateman.wiredi.test;
 
-import pl.pateman.gunwo.di.WireComponent;
+import pl.pateman.wiredi.WireComponent;
 
 @WireComponent(name = "another")
 public class AnotherComponent implements TestableComponent {

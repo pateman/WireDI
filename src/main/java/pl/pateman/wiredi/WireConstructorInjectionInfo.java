@@ -1,9 +1,8 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

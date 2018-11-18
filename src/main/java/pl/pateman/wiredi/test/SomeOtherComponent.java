@@ -1,8 +1,8 @@
-package pl.pateman.gunwo.di.test;
+package pl.pateman.wiredi.test;
 
-import pl.pateman.gunwo.di.Wire;
-import pl.pateman.gunwo.di.WireComponent;
-import pl.pateman.gunwo.di.WireName;
+import pl.pateman.wiredi.Wire;
+import pl.pateman.wiredi.WireComponent;
+import pl.pateman.wiredi.WireName;
 
 @WireComponent(name = "someOtherComponent")
 public class SomeOtherComponent

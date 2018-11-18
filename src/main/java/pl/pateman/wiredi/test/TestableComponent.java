@@ -1,4 +1,4 @@
-package pl.pateman.gunwo.di.test;
+package pl.pateman.wiredi.test;
 
 public interface TestableComponent {
 }

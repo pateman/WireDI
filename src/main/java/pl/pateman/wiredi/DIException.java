@@ -1,4 +1,4 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
 public final class DIException extends RuntimeException
 {

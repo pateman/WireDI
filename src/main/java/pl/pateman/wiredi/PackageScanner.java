@@ -1,4 +1,4 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
 import java.io.File;
 import java.net.URL;

@@ -1,4 +1,4 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
 import java.util.*;
 

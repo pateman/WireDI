@@ -1,15 +1,13 @@
-package pl.pateman.gunwo.di;
+package pl.pateman.wiredi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
+@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WireComponent
+public @interface Wire
 {
    String name() default "";
-
-   boolean multiple() default false;
 }
