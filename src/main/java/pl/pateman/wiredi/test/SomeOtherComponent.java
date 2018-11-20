@@ -8,12 +8,12 @@ import pl.pateman.wiredi.WireName;
 public class SomeOtherComponent
 {
    private TestableComponent someComponent;
+   private String test;
 
-   public SomeOtherComponent() {
-   }
-
-   public SomeOtherComponent(TestableComponent someComponent) {
+   @Wire
+   public SomeOtherComponent(@WireName("another") TestableComponent someComponent, String test) {
       this.someComponent = someComponent;
+      this.test = test;
    }
 
    @Wire

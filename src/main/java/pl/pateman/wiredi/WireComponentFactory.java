@@ -10,6 +10,9 @@ public final class WireComponentFactory {
     private WiringContext context;
 
     private Object getWireComponent(String wireName) {
+        if (PrimitiveDefaults.isPrimitiveOrJavaType(wireName)) {
+            return PrimitiveDefaults.getDefault(wireName);
+        }
         return context.getWireComponent(wireName);
     }
 

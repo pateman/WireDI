@@ -10,7 +10,7 @@ public class DIMain
    public static void main(String[] args)
    {
       PackageScanner packageScanner = new PackageScanner();
-      List<Class<?>> scannedClasses = packageScanner.getClasses("pl.pateman.gunwo.di");
+      List<Class<?>> scannedClasses = packageScanner.getClasses("pl.pateman.wiredi");
       WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
       WireComponentFactory wireComponentFactory = new WireComponentFactory();
       WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();

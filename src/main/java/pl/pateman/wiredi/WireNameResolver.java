@@ -37,11 +37,17 @@ final class WireNameResolver {
     }
 
     static String resolve(Method setter) {
+        Wire setterAnnotation = setter.getAnnotation(Wire.class);
+        if (setterAnnotation != null && !setterAnnotation.name().isEmpty()) {
+            return setterAnnotation.name();
+        }
+
         Parameter parameter = setter.getParameters()[0];
         WireName annotation = parameter.getAnnotation(WireName.class);
         if (annotation != null && !annotation.value().isEmpty()) {
             return annotation.value();
         }
+
         return parameter.getType().getCanonicalName();
     }
 }
