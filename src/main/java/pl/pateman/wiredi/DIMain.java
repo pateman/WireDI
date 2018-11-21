@@ -14,7 +14,7 @@ public class DIMain
       WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
       WireComponentFactory wireComponentFactory = new WireComponentFactory();
       WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
-      WiringContext wiringContext = new WiringContext(wireComponentInfoResolver, wireComponentFactory,
+      WiringContext wiringContext = new DefaultWiringContext(wireComponentInfoResolver, wireComponentFactory,
               wireComponentRegistry, scannedClasses);
       SomeOtherComponent wireComponent1 = wiringContext.getWireComponent(SomeOtherComponent.class);
       SomeOtherComponent wireComponent2 = wiringContext.getWireComponent(SomeOtherComponent.class);
