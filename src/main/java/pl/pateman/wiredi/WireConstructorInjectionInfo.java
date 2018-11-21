@@ -3,28 +3,32 @@ package pl.pateman.wiredi;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class WireConstructorInjectionInfo {
+public final class WireConstructorInjectionInfo {
     private final Constructor<?> constructor;
     private final Map<Class<?>, String> wiringParams;
 
-    WireConstructorInjectionInfo(Constructor<?> constructor) {
+    public WireConstructorInjectionInfo(Constructor<?> constructor) {
+        if (constructor == null) {
+            throw new IllegalArgumentException("A valid constructor is required");
+        }
         this.constructor = constructor;
         wiringParams = new LinkedHashMap<>();
     }
 
-    Constructor<?> getConstructor() {
+    public Constructor<?> getConstructor() {
         return constructor;
     }
 
-    void addWiringParam(Class<?> clz, Annotation[] annotations) {
+    public void addWiringParam(Class<?> clz, Annotation[] annotations) {
         String wireName = WireNameResolver.resolve(clz, annotations);
         wiringParams.put(clz, wireName);
     }
 
-    Collection<String> getWiringParams() {
-        return wiringParams.values();
+    public Collection<String> getWiringParams() {
+        return Collections.unmodifiableCollection(wiringParams.values());
     }
 }

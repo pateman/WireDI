@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface UserRegistry {
     User createUser(String firstName, String lastName);
+
+    User createRandomUser();
     Collection<User> getAll();
     Optional<User> getByFirstName(String firstName);
 }

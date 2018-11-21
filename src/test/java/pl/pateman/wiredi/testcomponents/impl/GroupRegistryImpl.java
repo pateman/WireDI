@@ -1,7 +1,9 @@
 package pl.pateman.wiredi.testcomponents.impl;
 
+import pl.pateman.wiredi.Wire;
 import pl.pateman.wiredi.WireComponent;
 import pl.pateman.wiredi.testcomponents.GroupRegistry;
+import pl.pateman.wiredi.testcomponents.UserRegistry;
 import pl.pateman.wiredi.testcomponents.dto.Group;
 import pl.pateman.wiredi.testcomponents.dto.User;
 
@@ -11,9 +13,12 @@ import java.util.*;
 public class GroupRegistryImpl implements GroupRegistry {
 
     private final Set<Group> groupSet;
+    private UserRegistry userRegistry;
 
-    private GroupRegistryImpl() {
+    @Wire
+    private GroupRegistryImpl(UserRegistry userRegistry) {
         groupSet = new HashSet<>();
+        this.userRegistry = userRegistry;
     }
 
     @Override
@@ -34,7 +39,8 @@ public class GroupRegistryImpl implements GroupRegistry {
     }
 
     @Override
-    public void addUserToGroup(String groupId, User user) {
-        getById(groupId).ifPresent(g -> g.addUser(user));
+    public void addUserToGroup(String groupId, String userFirstName) {
+        Optional<User> user = userRegistry.getByFirstName(userFirstName);
+        user.ifPresent(u -> getById(groupId).ifPresent(g -> g.addUser(u)));
     }
 }

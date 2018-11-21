@@ -4,33 +4,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class WireComponentInfo {
+public final class WireComponentInfo {
     private final Class<?> clz;
     private final boolean multipleAllowed;
     private WireConstructorInjectionInfo constructorInjectionInfo;
     private final List<WireFieldInjectionInfo> fieldInjectionInfo;
     private final List<WireSetterInjectionInfo> setterInjectionInfo;
 
-    WireComponentInfo(Class<?> clz, boolean multipleAllowed) {
+    public WireComponentInfo(Class<?> clz, boolean multipleAllowed) {
         this.clz = clz;
         this.multipleAllowed = multipleAllowed;
         fieldInjectionInfo = new ArrayList<>();
         setterInjectionInfo = new ArrayList<>();
     }
 
-    Class<?> getClz() {
+    public Class<?> getClz() {
         return clz;
     }
 
-    boolean isMultipleAllowed() {
+    public boolean isMultipleAllowed() {
         return multipleAllowed;
     }
 
-    boolean hasConstructorInjection() {
+    public boolean hasConstructorInjection() {
         return constructorInjectionInfo != null;
     }
 
-    WireConstructorInjectionInfo getConstructorInjectionInfo() {
+    public WireConstructorInjectionInfo getConstructorInjectionInfo() {
         return constructorInjectionInfo;
     }
 
@@ -46,11 +46,19 @@ class WireComponentInfo {
         return fieldInjectionInfo;
     }
 
+    boolean hasFieldInjectionInfo() {
+        return !fieldInjectionInfo.isEmpty();
+    }
+
     void addSetterInjectionInfo(Collection<WireSetterInjectionInfo> collection) {
         setterInjectionInfo.addAll(collection);
     }
 
     List<WireSetterInjectionInfo> getSetterInjectionInfo() {
         return setterInjectionInfo;
+    }
+
+    boolean hasSetterInjectionInfo() {
+        return !setterInjectionInfo.isEmpty();
     }
 }

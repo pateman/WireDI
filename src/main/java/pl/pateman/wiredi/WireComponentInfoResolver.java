@@ -18,7 +18,7 @@ public class WireComponentInfoResolver {
 
     private void determineConstructorInjection(WireComponentInfo wireComponentInfo) {
         Class<?> clz = wireComponentInfo.getClz();
-        Constructor<?>[] constructors = clz.getConstructors();
+        Constructor<?>[] constructors = clz.getDeclaredConstructors();
 
         if (constructors.length == 0) {
             return;
@@ -105,6 +105,9 @@ public class WireComponentInfoResolver {
 
     private WireComponentInfo resolveWireComponentInfo(Class<?> componentClass) {
         WireComponent wireComponent = componentClass.getAnnotation(WireComponent.class);
+        if (wireComponent == null) {
+            throw new DIException(componentClass + " is not annotated with WireComponent");
+        }
         WireComponentInfo wireComponentInfo = new WireComponentInfo(componentClass, wireComponent.multiple());
         fillWireComponentInfo(wireComponentInfo);
 
