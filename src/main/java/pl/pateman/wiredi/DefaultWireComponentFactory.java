@@ -56,12 +56,13 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
     @SuppressWarnings("unchecked")
     private <T> T instantiateClass(Class<T> clz) throws IllegalAccessException, InstantiationException, NoSuchFieldException {
         try {
-            return clz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return clz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             //  Do nothing. Try using Unsafe instead.
+            return (T) getUnsafe().allocateInstance(clz);
+        } catch (Exception ex) {
+            throw new DIException("Error in initializer", ex);
         }
-
-        return (T) getUnsafe().allocateInstance(clz);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,6 +78,7 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
                 .stream()
                 .map(this::getWireComponent)
                 .toArray();
+        constructor.setAccessible(true);
         return (T) constructor.newInstance(resolvedParameters);
     }
 
@@ -89,6 +91,8 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
             return instance;
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchFieldException e) {
             throw new DIException(e);
+        } catch (Exception ex) {
+            throw new DIException("Exception during initialization", ex);
         }
     }
 
