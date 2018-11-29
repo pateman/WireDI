@@ -2,21 +2,18 @@ package pl.pateman.wiredi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class WireConstructorInjectionInfo {
     private final Constructor<?> constructor;
-    private final Map<Class<?>, String> wiringParams;
+    private final List<String> wiringParams;
 
     public WireConstructorInjectionInfo(Constructor<?> constructor) {
         if (constructor == null) {
             throw new IllegalArgumentException("A valid constructor is required");
         }
         this.constructor = constructor;
-        wiringParams = new LinkedHashMap<>();
+        wiringParams = new ArrayList<>();
     }
 
     public Constructor<?> getConstructor() {
@@ -25,10 +22,10 @@ public final class WireConstructorInjectionInfo {
 
     public void addWiringParam(Class<?> clz, Annotation[] annotations) {
         String wireName = WireNameResolver.resolve(clz, annotations);
-        wiringParams.put(clz, wireName);
+        wiringParams.add(wireName);
     }
 
     public Collection<String> getWiringParams() {
-        return Collections.unmodifiableCollection(wiringParams.values());
+        return Collections.unmodifiableCollection(wiringParams);
     }
 }

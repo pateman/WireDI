@@ -8,16 +8,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultWiringContext implements WiringContext {
     private final WireComponentInfoResolver componentInfoResolver;
-    private final WireComponentFactory componentFactory;
+    private final DefaultWireComponentFactory componentFactory;
     private final WireComponentRegistry componentRegistry;
     private final Map<String, Class<?>> wireComponents;
     private final Map<String, Set<String>> componentHierarchy;
     private final Set<Class<?>> classesInWiring;
 
-    public DefaultWiringContext(WireComponentInfoResolver componentInfoResolver, WireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
+    public DefaultWiringContext(WireComponentInfoResolver componentInfoResolver, DefaultWireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
         this.componentInfoResolver = componentInfoResolver;
         this.componentFactory = componentFactory;
-        this.componentFactory.setContext(this);
+        this.componentFactory.assignWiringContext(this);
         this.componentRegistry = componentRegistry;
         wireComponents = WireComponentDiscovery.findWireComponents(scannedClasses);
         componentHierarchy = WireComponentHierarchyDiscovery.findHierarchy(wireComponents);

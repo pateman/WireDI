@@ -12,7 +12,7 @@ public class AlphanumericRandomStringGenerator extends AbstractRandomStringGener
 
     private final Random random;
 
-    private AlphanumericRandomStringGenerator() {
+    public AlphanumericRandomStringGenerator() {
         random = new Random();
     }
 

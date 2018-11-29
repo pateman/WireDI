@@ -12,7 +12,7 @@ public class LettersOnlyRandomStringGenerator extends AbstractRandomStringGenera
 
     private final Random random;
 
-    private LettersOnlyRandomStringGenerator() {
+    public LettersOnlyRandomStringGenerator() {
         random = new Random();
     }
 

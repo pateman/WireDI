@@ -12,7 +12,7 @@ public class DIMain
       PackageScanner packageScanner = new PackageScanner();
       List<Class<?>> scannedClasses = packageScanner.getClasses("pl.pateman.wiredi");
       WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
-      WireComponentFactory wireComponentFactory = new WireComponentFactory();
+      DefaultWireComponentFactory wireComponentFactory = new DefaultWireComponentFactory();
       WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
       WiringContext wiringContext = new DefaultWiringContext(wireComponentInfoResolver, wireComponentFactory,
               wireComponentRegistry, scannedClasses);
