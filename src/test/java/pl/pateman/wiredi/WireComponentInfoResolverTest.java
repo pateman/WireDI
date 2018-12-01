@@ -1,6 +1,9 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.annotation.WireAfterInit;
+import pl.pateman.wiredi.annotation.WireBeforeDestroy;
+import pl.pateman.wiredi.annotation.WireComponent;
 import pl.pateman.wiredi.core.WireComponentInfoResolver;
 import pl.pateman.wiredi.dto.WireComponentInfo;
 import pl.pateman.wiredi.exception.DIException;
@@ -74,5 +77,38 @@ public class WireComponentInfoResolverTest {
                 .getSetterInjectionInfo()
                 .get(0)
                 .getWireName());
+    }
+
+    @Test
+    public void shouldResolveWireInfoForComponentWithLifecycleMethods() {
+        WireComponentInfoResolver resolver = givenResolver();
+
+        WireComponentInfo componentInfo = resolver.getComponentInfo(ComponentWithBeforeDestroy.class);
+
+        assertTrue(componentInfo.hasLifecycleMethods());
+        assertTrue(componentInfo.getLifecycleMethodsInfo().hasAfterInit());
+        assertEquals("postConstruct", componentInfo.getLifecycleMethodsInfo().getAfterInitMethod().getName());
+        assertTrue(componentInfo.getLifecycleMethodsInfo().hasBeforeDestroy());
+        assertEquals("preDestroy", componentInfo.getLifecycleMethodsInfo().getBeforeDestroyMethod().getName());
+    }
+
+    private class ComponentWithAfterInit {
+        @WireAfterInit
+        private void postConstruct() {
+            //  Do nothing.
+        }
+
+        @WireAfterInit
+        private void invalidPostConstruct(int someParam) {
+            //  Do nothing.
+        }
+    }
+
+    @WireComponent
+    private class ComponentWithBeforeDestroy extends ComponentWithAfterInit {
+        @WireBeforeDestroy
+        private void preDestroy() {
+            //  Do nothing.
+        }
     }
 }

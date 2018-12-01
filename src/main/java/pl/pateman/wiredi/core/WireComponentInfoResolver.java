@@ -1,24 +1,19 @@
 package pl.pateman.wiredi.core;
 
 import pl.pateman.wiredi.annotation.Wire;
+import pl.pateman.wiredi.annotation.WireAfterInit;
+import pl.pateman.wiredi.annotation.WireBeforeDestroy;
 import pl.pateman.wiredi.annotation.WireComponent;
-import pl.pateman.wiredi.dto.WireComponentInfo;
-import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
-import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
-import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
+import pl.pateman.wiredi.dto.*;
 import pl.pateman.wiredi.exception.DIException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public final class WireComponentInfoResolver {
 
@@ -60,17 +55,25 @@ public final class WireComponentInfoResolver {
         return fields;
     }
 
-    private List<Method> getSetters(Class<?> clz) {
-        List<Method> setters = new ArrayList<>();
+    private List<Method> getDeclaredMethods(Class<?> clz) {
+        List<Method> methods = new ArrayList<>();
         while (clz != Object.class) {
-            Stream
-                    .of(clz.getDeclaredMethods())
-                    .filter(mtd -> mtd.getName().startsWith("set"))
-                    .filter(mtd -> mtd.getParameterCount() == 1)
-                    .forEach(setters::add);
+            methods.addAll(Arrays.asList(clz.getDeclaredMethods()));
             clz = clz.getSuperclass();
         }
-        return setters;
+        return methods;
+    }
+
+    private List<Method> getSetters(Class<?> clz) {
+        return getDeclaredMethods(clz)
+                .stream()
+                .filter(mtd -> mtd.getName().startsWith("set"))
+                .filter(mtd -> mtd.getParameterCount() == 1)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isLifecycleMethod(Method method) {
+        return (method.isAnnotationPresent(WireAfterInit.class) || method.isAnnotationPresent(WireBeforeDestroy.class)) && method.getParameterCount() == 0;
     }
 
     private void determineFieldInjection(WireComponentInfo wireComponentInfo) {
@@ -105,10 +108,33 @@ public final class WireComponentInfoResolver {
         wireComponentInfo.addSetterInjectionInfo(setterInjectionInfoList);
     }
 
+    private void determineLifecycleMethods(WireComponentInfo wireComponentInfo) {
+        List<Method> methods = getDeclaredMethods(wireComponentInfo.getClz());
+
+        if (methods.isEmpty()) {
+            return;
+        }
+
+        List<Method> lifecycleMethods = methods
+                .stream()
+                .filter(this::isLifecycleMethod)
+                .collect(Collectors.toList());
+        if (lifecycleMethods.isEmpty()) {
+            return;
+        }
+
+        Optional<Method> afterInit = lifecycleMethods.stream().filter(m -> m.isAnnotationPresent(WireAfterInit.class)).findFirst();
+        Optional<Method> beforeDestroy = lifecycleMethods.stream().filter(m -> m.isAnnotationPresent(WireBeforeDestroy.class)).findFirst();
+
+        WireLifecycleMethodsInfo wireLifecycleMethodsInfo = new WireLifecycleMethodsInfo(afterInit.orElse(null), beforeDestroy.orElse(null));
+        wireComponentInfo.setLifecycleMethodsInfo(wireLifecycleMethodsInfo);
+    }
+
     private void fillWireComponentInfo(WireComponentInfo wireComponentInfo) {
         determineConstructorInjection(wireComponentInfo);
         determineFieldInjection(wireComponentInfo);
         determineSetterInjection(wireComponentInfo);
+        determineLifecycleMethods(wireComponentInfo);
     }
 
     private WireComponentInfo resolveWireComponentInfo(Class<?> componentClass) {

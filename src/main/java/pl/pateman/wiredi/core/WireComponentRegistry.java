@@ -4,6 +4,8 @@ import pl.pateman.wiredi.dto.WireComponentInfo;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class WireComponentRegistry {
     private final Map<Class<?>, Object> singletons;
@@ -11,11 +13,11 @@ public final class WireComponentRegistry {
 
     public WireComponentRegistry() {
         singletons = new ConcurrentHashMap<>();
-        instances = new HashMap<>();
+        instances = new ConcurrentHashMap<>();
     }
 
     private void putInstance(WireComponentInfo wireComponentInfo, Object instance) {
-        List<Object> objects = instances.computeIfAbsent(wireComponentInfo.getClz(), (k) -> new ArrayList<>());
+        List<Object> objects = instances.computeIfAbsent(wireComponentInfo.getClz(), (k) -> Collections.synchronizedList(new ArrayList<>()));
         objects.add(instance);
     }
 
@@ -36,5 +38,21 @@ public final class WireComponentRegistry {
             return;
         }
         putSingleton(wireComponentInfo, instance);
+    }
+
+    public List<Object> getComponentsByClass(Class<?> clz) {
+        if (singletons.containsKey(clz)) {
+            return Collections.singletonList(singletons.get(clz));
+        }
+        if (instances.containsKey(clz)) {
+            return Collections.unmodifiableList(instances.get(clz));
+        }
+        return Collections.emptyList();
+    }
+
+    public Set<Class<?>> getComponentClasses() {
+        return Stream
+                .concat(singletons.keySet().stream(), instances.keySet().stream())
+                .collect(Collectors.toSet());
     }
 }

@@ -5,11 +5,14 @@ import pl.pateman.wiredi.WiringContext;
 import pl.pateman.wiredi.dto.WireComponentInfo;
 import pl.pateman.wiredi.exception.DIException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class DefaultWiringContext implements WiringContext {
     private final WireComponentInfoResolver componentInfoResolver;
@@ -79,11 +82,19 @@ public class DefaultWiringContext implements WiringContext {
         return getComponentFromRegistry(componentInfo);
     }
 
+    private void invokeBeforeDestroy(Object instance, WireComponentInfo wireComponentInfo) {
+        Method beforeDestroyMethod = wireComponentInfo.getLifecycleMethodsInfo().getBeforeDestroyMethod();
+        beforeDestroyMethod.setAccessible(true);
+        try {
+            beforeDestroyMethod.invoke(instance);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new DIException("Unable to invoke @WireBeforeDestroy on a component of class '" + wireComponentInfo.getClz() + "'", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getWireComponent(Class<T> clz) {
-        //  TODO Lifecycle methods - afterInit, preDestroy
-
         if (classesInWiring.contains(clz)) {
             throw new DIException("Circular dependency on '" + clz + "' detected");
         }
@@ -94,6 +105,24 @@ public class DefaultWiringContext implements WiringContext {
         }
 
         return createComponent(componentInfo);
+    }
+
+    @Override
+    public void destroy() {
+        Set<Class<?>> wiredClasses = componentRegistry.getComponentClasses();
+        Set<WireComponentInfo> componentsWithBeforeDestroy = wiredClasses
+                .stream()
+                .map(componentInfoResolver::getComponentInfo)
+                .filter(WireComponentInfo::hasLifecycleMethods)
+                .filter(wireComponentInfo -> wireComponentInfo.getLifecycleMethodsInfo().hasBeforeDestroy())
+                .collect(Collectors.toSet());
+
+        for (WireComponentInfo componentInfo : componentsWithBeforeDestroy) {
+            List<Object> componentsByClass = componentRegistry.getComponentsByClass(componentInfo.getClz());
+            for (Object component : componentsByClass) {
+                invokeBeforeDestroy(component, componentInfo);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

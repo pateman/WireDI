@@ -2,10 +2,7 @@ package pl.pateman.wiredi;
 
 import org.junit.Test;
 import pl.pateman.wiredi.core.DefaultWireComponentFactory;
-import pl.pateman.wiredi.dto.WireComponentInfo;
-import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
-import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
-import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
+import pl.pateman.wiredi.dto.*;
 import pl.pateman.wiredi.testcomponents.ComponentWithContextAsDependency;
 import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.dto.User;
@@ -13,11 +10,13 @@ import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.LettersOnlyRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static pl.pateman.wiredi.test.FieldValueInstanceOf.fieldValueInstanceOf;
 import static pl.pateman.wiredi.test.HasAssignedFields.hasAssignedFields;
 
@@ -60,6 +59,18 @@ public class WireComponentFactoryTest {
         WireConstructorInjectionInfo constructorInjectionInfo = new WireConstructorInjectionInfo(ComponentWithContextAsDependency.class.getConstructors()[0]);
         constructorInjectionInfo.addWiringParam(WiringContext.class, null);
         wireComponentInfo.setConstructorInjectionInfo(constructorInjectionInfo);
+        return wireComponentInfo;
+    }
+
+    private WireComponentInfo givenComponentWithAfterInitWireInfo() {
+        WireComponentInfo wireComponentInfo = new WireComponentInfo(ComponentWithAfterInit.class, true);
+        try {
+            Method afterInitMethod = ComponentWithAfterInit.class.getDeclaredMethod("initDone");
+            WireLifecycleMethodsInfo wireLifecycleMethodsInfo = new WireLifecycleMethodsInfo(afterInitMethod, null);
+            wireComponentInfo.setLifecycleMethodsInfo(wireLifecycleMethodsInfo);
+        } catch (NoSuchMethodException e) {
+            //  Do nothing.
+        }
         return wireComponentInfo;
     }
 
@@ -108,6 +119,16 @@ public class WireComponentFactoryTest {
         assertThat(wireComponent, fieldValueInstanceOf("context", DummyWiringContext.class));
     }
 
+    @Test
+    public void shouldExecuteAfterInit() {
+        WireComponentInfo wireComponentInfo = givenComponentWithAfterInitWireInfo();
+        DefaultWireComponentFactory factory = givenFactory();
+
+        ComponentWithAfterInit wireComponent = factory.createWireComponent(wireComponentInfo);
+
+        assertEquals("test", wireComponent.getTest());
+    }
+
     private class DummyWiringContext implements WiringContext {
 
         @Override
@@ -126,9 +147,26 @@ public class WireComponentFactoryTest {
         public <T> T getWireComponent(Class<T> clz) {
             return null;
         }
+
+        @Override
+        public void destroy() {
+            //  Do nothing.
+        }
     }
 
     private class TrivialComponent {
 
+    }
+
+    private class ComponentWithAfterInit {
+        private String test;
+
+        private void initDone() {
+            test = "test";
+        }
+
+        private String getTest() {
+            return test;
+        }
     }
 }

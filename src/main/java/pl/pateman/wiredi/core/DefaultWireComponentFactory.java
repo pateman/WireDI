@@ -66,6 +66,20 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
         }
     }
 
+    private void runAfterInitMethod(Object instance, WireComponentInfo wireComponentInfo) throws InvocationTargetException, IllegalAccessException {
+        if (!wireComponentInfo.hasLifecycleMethods()) {
+            return;
+        }
+
+        if (!wireComponentInfo.getLifecycleMethodsInfo().hasAfterInit()) {
+            return;
+        }
+
+        Method afterInitMethod = wireComponentInfo.getLifecycleMethodsInfo().getAfterInitMethod();
+        afterInitMethod.setAccessible(true);
+        afterInitMethod.invoke(instance);
+    }
+
     @SuppressWarnings("restriction")
     private static Unsafe getUnsafe() throws NoSuchFieldException, IllegalAccessException {
         Field singleoneInstanceField = Unsafe.class.getDeclaredField("theUnsafe");
@@ -108,6 +122,7 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
             T instance = instantiate(wireComponentInfo);
             injectFields(instance, wireComponentInfo);
             injectSetters(instance, wireComponentInfo);
+            runAfterInitMethod(instance, wireComponentInfo);
             return instance;
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchFieldException e) {
             throw new DIException(e);

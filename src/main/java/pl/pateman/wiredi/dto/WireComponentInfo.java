@@ -11,6 +11,7 @@ public final class WireComponentInfo {
     private WireConstructorInjectionInfo constructorInjectionInfo;
     private final List<WireFieldInjectionInfo> fieldInjectionInfo;
     private final List<WireSetterInjectionInfo> setterInjectionInfo;
+    private WireLifecycleMethodsInfo lifecycleMethodsInfo;
 
     public WireComponentInfo(Class<?> clz, boolean multipleAllowed) {
         this.clz = clz;
@@ -61,5 +62,17 @@ public final class WireComponentInfo {
 
     public boolean hasSetterInjectionInfo() {
         return !setterInjectionInfo.isEmpty();
+    }
+
+    public boolean hasLifecycleMethods() {
+        return lifecycleMethodsInfo != null && (lifecycleMethodsInfo.hasAfterInit() || lifecycleMethodsInfo.hasBeforeDestroy());
+    }
+
+    public WireLifecycleMethodsInfo getLifecycleMethodsInfo() {
+        return lifecycleMethodsInfo;
+    }
+
+    public void setLifecycleMethodsInfo(WireLifecycleMethodsInfo lifecycleMethodsInfo) {
+        this.lifecycleMethodsInfo = lifecycleMethodsInfo;
     }
 }

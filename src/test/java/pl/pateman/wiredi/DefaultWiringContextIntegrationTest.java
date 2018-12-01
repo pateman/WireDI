@@ -7,6 +7,7 @@ import pl.pateman.wiredi.core.DefaultWiringContext;
 import pl.pateman.wiredi.core.WireComponentInfoResolver;
 import pl.pateman.wiredi.core.WireComponentRegistry;
 import pl.pateman.wiredi.exception.DIException;
+import pl.pateman.wiredi.testcomponents.BeforeDestroyComponent;
 import pl.pateman.wiredi.testcomponents.FailingComponent;
 import pl.pateman.wiredi.testcomponents.HeavyInitComponent;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
@@ -131,6 +132,29 @@ public class DefaultWiringContextIntegrationTest {
         }
     }
 
+    @Test
+    public void shouldRunBeforeDestroyWhenContextIsDestroyed() {
+        WiringContext wiringContext = givenContext();
+
+        Set<BeforeDestroyComponent> components = IntStream.range(0, 3)
+                .mapToObj(i -> wiringContext.getWireComponent(BeforeDestroyComponent.class))
+                .collect(Collectors.toSet());
+        long beforeDestroy = components
+                .stream()
+                .map(BeforeDestroyComponent::isDestroyed)
+                .filter(b -> !b)
+                .count();
+        wiringContext.destroy();
+        long afterDestroy = components
+                .stream()
+                .map(BeforeDestroyComponent::isDestroyed)
+                .filter(b -> !b)
+                .count();
+
+        assertEquals(3L, beforeDestroy);
+        assertEquals(0L, afterDestroy);
+    }
+
     private class HeavyComponentCallable implements Callable<HeavyInitComponent> {
 
         private final WiringContext wiringContext;
@@ -140,7 +164,7 @@ public class DefaultWiringContextIntegrationTest {
         }
 
         @Override
-        public HeavyInitComponent call() throws Exception {
+        public HeavyInitComponent call() {
             return wiringContext.getWireComponent(HeavyInitComponent.class);
         }
     }
