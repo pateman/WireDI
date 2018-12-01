@@ -19,10 +19,22 @@ import java.util.List;
 public final class DefaultWireComponentFactory implements WireComponentFactory {
     private WiringContext context;
 
+    private boolean isWireNameAWiringContext(String wireName) {
+        return WiringContext.class.getCanonicalName().equals(wireName) || DefaultWiringContext.class.getCanonicalName().equals(wireName);
+    }
+
     private Object getWireComponent(String wireName) {
         if (PrimitiveDefaults.isPrimitiveOrJavaType(wireName)) {
             return PrimitiveDefaults.getDefault(wireName);
         }
+        if (context == null) {
+            throw new DIException("DefaultWireComponentFactory requires a valid WiringContext");
+        }
+
+        if (isWireNameAWiringContext(wireName)) {
+            return context;
+        }
+
         return context.getWireComponent(wireName);
     }
 
