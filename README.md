@@ -53,6 +53,28 @@ private WiringContext givenContext() {
 
 Examine the class `pl.pateman.wiredi.DefaultWiringContextIntegrationTest` to learn how to use the library. You can also have a look at other tests in the same package to see what other classes are available.
 
+### Lifecycle methods
+There's also support for two lifecycle methods - AfterInit and BeforeDestroy. Annotate a method (make sure not to use any parameters) with `@WireAfterInit` and `@WireBeforeDestroy` respectively. An AfterInit is called when a component is created by the context (after all its dependencies have been resolved) and a BeforeDestroy is called when the context's `destroy()` method is invoked.
+
+### Injecting the context
+`DefaultWireComponentFactory` supports injecting the current `WiringContext` into components. Just use the `WiringContext` type for your injected parameter/field and everything will happen automatically, for example:
+
+```
+@WireComponent
+public class ComponentWithContextAsDependency {
+    private final WiringContext context;
+
+    @Wire
+    public ComponentWithContextAsDependency(WiringContext context) {
+        this.context = context;
+    }
+
+    public WiringContext getContext() {
+        return context;
+    }
+}
+```
+
 ## Documentation
 Currently there's no documentation, sorry. Feel free to have a look at the code and tests to figure out what's going under the hood. Don't worry - the code is pretty straight-forward. :)
 
