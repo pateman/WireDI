@@ -1,4 +1,9 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
+
+import pl.pateman.wiredi.WireComponentFactory;
+import pl.pateman.wiredi.WiringContext;
+import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.exception.DIException;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,6 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.util;
+
+import pl.pateman.wiredi.exception.DIException;
 
 import java.lang.reflect.Array;
 import java.util.AbstractMap.SimpleEntry;
@@ -7,7 +9,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
-final class PrimitiveDefaults {
+public final class PrimitiveDefaults {
     private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAMES = Stream
             .of(new SimpleEntry<>("boolean", boolean.class),
                     new SimpleEntry<>("byte", byte.class),

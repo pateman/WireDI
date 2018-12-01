@@ -1,6 +1,9 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.core.WireComponentInfoResolver;
+import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.UserRegistry;
 import pl.pateman.wiredi.testcomponents.dto.User;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;

@@ -1,6 +1,9 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.annotation.Wire;
+import pl.pateman.wiredi.annotation.WireName;
+import pl.pateman.wiredi.core.WireNameResolver;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Field;

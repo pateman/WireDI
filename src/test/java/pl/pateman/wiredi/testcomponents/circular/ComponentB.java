@@ -1,8 +1,8 @@
 package pl.pateman.wiredi.testcomponents.circular;
 
-import pl.pateman.wiredi.Wire;
-import pl.pateman.wiredi.WireComponent;
-import pl.pateman.wiredi.WireName;
+import pl.pateman.wiredi.annotation.Wire;
+import pl.pateman.wiredi.annotation.WireComponent;
+import pl.pateman.wiredi.annotation.WireName;
 
 @WireComponent(name = "componentB")
 public class ComponentB {

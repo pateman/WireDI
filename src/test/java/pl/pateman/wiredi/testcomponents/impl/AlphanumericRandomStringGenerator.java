@@ -1,6 +1,6 @@
 package pl.pateman.wiredi.testcomponents.impl;
 
-import pl.pateman.wiredi.WireComponent;
+import pl.pateman.wiredi.annotation.WireComponent;
 import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
 
 import java.util.Random;

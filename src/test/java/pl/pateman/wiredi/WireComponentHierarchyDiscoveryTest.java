@@ -1,6 +1,7 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.core.WireComponentHierarchyDiscovery;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.LettersOnlyRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;

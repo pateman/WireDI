@@ -1,4 +1,12 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
+
+import pl.pateman.wiredi.annotation.Wire;
+import pl.pateman.wiredi.annotation.WireComponent;
+import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
+import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
+import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
+import pl.pateman.wiredi.exception.DIException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -12,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class WireComponentInfoResolver {
+public final class WireComponentInfoResolver {
 
     private final Map<Class<?>, WireComponentInfo> componentInfo;
 
@@ -114,11 +122,11 @@ public class WireComponentInfoResolver {
         return wireComponentInfo;
     }
 
-    WireComponentInfoResolver() {
+    public WireComponentInfoResolver() {
         componentInfo = new ConcurrentHashMap<>();
     }
 
-    WireComponentInfo getComponentInfo(Class<?> componentClass) {
+    public WireComponentInfo getComponentInfo(Class<?> componentClass) {
         return componentInfo.computeIfAbsent(componentClass, this::resolveWireComponentInfo);
     }
 

@@ -1,4 +1,4 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.exception;
 
 public final class DIException extends RuntimeException
 {

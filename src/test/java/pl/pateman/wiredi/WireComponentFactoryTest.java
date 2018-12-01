@@ -1,6 +1,11 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.core.DefaultWireComponentFactory;
+import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
+import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
+import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
 import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.dto.User;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;

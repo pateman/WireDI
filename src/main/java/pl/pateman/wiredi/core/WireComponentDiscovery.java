@@ -1,4 +1,6 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
+
+import pl.pateman.wiredi.annotation.WireComponent;
 
 import java.util.List;
 import java.util.Map;

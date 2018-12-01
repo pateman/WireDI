@@ -1,5 +1,13 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
 
+import pl.pateman.wiredi.WireComponentFactory;
+import pl.pateman.wiredi.WiringContext;
+import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
+import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
+import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
+import pl.pateman.wiredi.exception.DIException;
+import pl.pateman.wiredi.util.PrimitiveDefaults;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Constructor;

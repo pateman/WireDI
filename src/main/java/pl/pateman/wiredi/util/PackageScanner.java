@@ -1,4 +1,6 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.util;
+
+import pl.pateman.wiredi.exception.DIException;
 
 import java.io.File;
 import java.net.URL;

@@ -1,7 +1,7 @@
 package pl.pateman.wiredi.testcomponents.impl;
 
-import pl.pateman.wiredi.Wire;
-import pl.pateman.wiredi.WireComponent;
+import pl.pateman.wiredi.annotation.Wire;
+import pl.pateman.wiredi.annotation.WireComponent;
 import pl.pateman.wiredi.testcomponents.GroupRegistry;
 import pl.pateman.wiredi.testcomponents.UserRegistry;
 import pl.pateman.wiredi.testcomponents.dto.Group;

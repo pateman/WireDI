@@ -1,6 +1,7 @@
 package pl.pateman.wiredi;
 
 import org.junit.Test;
+import pl.pateman.wiredi.core.WireComponentDiscovery;
 import pl.pateman.wiredi.testcomponents.UserRegistry;
 import pl.pateman.wiredi.testcomponents.dto.User;
 import pl.pateman.wiredi.testcomponents.impl.GroupRegistryImpl;

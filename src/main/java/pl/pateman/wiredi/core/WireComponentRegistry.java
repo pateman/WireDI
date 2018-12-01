@@ -1,4 +1,6 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
+
+import pl.pateman.wiredi.dto.WireComponentInfo;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

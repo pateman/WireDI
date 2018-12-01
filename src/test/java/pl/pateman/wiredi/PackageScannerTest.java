@@ -2,6 +2,7 @@ package pl.pateman.wiredi;
 
 import org.junit.Test;
 import pl.pateman.wiredi.testcomponents.dto.User;
+import pl.pateman.wiredi.util.PackageScanner;
 
 import java.util.List;
 

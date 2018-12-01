@@ -2,10 +2,16 @@ package pl.pateman.wiredi;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import pl.pateman.wiredi.core.DefaultWireComponentFactory;
+import pl.pateman.wiredi.core.DefaultWiringContext;
+import pl.pateman.wiredi.core.WireComponentInfoResolver;
+import pl.pateman.wiredi.core.WireComponentRegistry;
+import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.FailingComponent;
 import pl.pateman.wiredi.testcomponents.HeavyInitComponent;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
+import pl.pateman.wiredi.util.PackageScanner;
 
 import java.util.List;
 import java.util.Optional;

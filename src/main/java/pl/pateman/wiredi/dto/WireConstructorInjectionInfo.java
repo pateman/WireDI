@@ -1,8 +1,13 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.dto;
+
+import pl.pateman.wiredi.core.WireNameResolver;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public final class WireConstructorInjectionInfo {
     private final Constructor<?> constructor;

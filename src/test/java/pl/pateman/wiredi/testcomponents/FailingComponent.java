@@ -1,6 +1,6 @@
 package pl.pateman.wiredi.testcomponents;
 
-import pl.pateman.wiredi.WireComponent;
+import pl.pateman.wiredi.annotation.WireComponent;
 
 @WireComponent
 public class FailingComponent {

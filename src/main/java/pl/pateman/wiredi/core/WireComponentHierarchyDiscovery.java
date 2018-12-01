@@ -1,4 +1,4 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.core;
 
 import java.util.*;
 

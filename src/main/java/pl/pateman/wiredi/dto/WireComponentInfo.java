@@ -1,7 +1,8 @@
-package pl.pateman.wiredi;
+package pl.pateman.wiredi.dto;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public final class WireComponentInfo {
@@ -34,31 +35,31 @@ public final class WireComponentInfo {
         return constructorInjectionInfo;
     }
 
-    void setConstructorInjectionInfo(WireConstructorInjectionInfo constructorInjectionInfo) {
+    public void setConstructorInjectionInfo(WireConstructorInjectionInfo constructorInjectionInfo) {
         this.constructorInjectionInfo = constructorInjectionInfo;
     }
 
-    void addFieldInjectionInfo(Collection<WireFieldInjectionInfo> collection) {
+    public void addFieldInjectionInfo(Collection<WireFieldInjectionInfo> collection) {
         fieldInjectionInfo.addAll(collection);
     }
 
-    List<WireFieldInjectionInfo> getFieldInjectionInfo() {
-        return fieldInjectionInfo;
+    public List<WireFieldInjectionInfo> getFieldInjectionInfo() {
+        return Collections.unmodifiableList(fieldInjectionInfo);
     }
 
-    boolean hasFieldInjectionInfo() {
+    public boolean hasFieldInjectionInfo() {
         return !fieldInjectionInfo.isEmpty();
     }
 
-    void addSetterInjectionInfo(Collection<WireSetterInjectionInfo> collection) {
+    public void addSetterInjectionInfo(Collection<WireSetterInjectionInfo> collection) {
         setterInjectionInfo.addAll(collection);
     }
 
-    List<WireSetterInjectionInfo> getSetterInjectionInfo() {
-        return setterInjectionInfo;
+    public List<WireSetterInjectionInfo> getSetterInjectionInfo() {
+        return Collections.unmodifiableList(setterInjectionInfo);
     }
 
-    boolean hasSetterInjectionInfo() {
+    public boolean hasSetterInjectionInfo() {
         return !setterInjectionInfo.isEmpty();
     }
 }
