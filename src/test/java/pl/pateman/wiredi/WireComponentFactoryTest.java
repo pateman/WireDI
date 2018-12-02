@@ -11,6 +11,7 @@ import pl.pateman.wiredi.testcomponents.impl.LettersOnlyRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -151,6 +152,11 @@ public class WireComponentFactoryTest {
         @Override
         public void destroy() {
             //  Do nothing.
+        }
+
+        @Override
+        public <T> Collection<T> getWireComponentsOfType(Class<T> clz) {
+            return null;
         }
     }
 

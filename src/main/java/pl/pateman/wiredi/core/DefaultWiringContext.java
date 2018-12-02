@@ -7,10 +7,7 @@ import pl.pateman.wiredi.exception.DIException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -123,6 +120,20 @@ public class DefaultWiringContext implements WiringContext {
                 invokeBeforeDestroy(component, componentInfo);
             }
         }
+    }
+
+    @Override
+    public <T> Collection<T> getWireComponentsOfType(Class<T> clz) {
+        Set<String> wireNames = componentHierarchy.get(clz.getCanonicalName());
+        if (wireNames == null || wireNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return wireNames
+                .stream()
+                .map(this::getWireComponent)
+                .map(clz::cast)
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")

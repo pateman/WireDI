@@ -10,10 +10,12 @@ import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.BeforeDestroyComponent;
 import pl.pateman.wiredi.testcomponents.FailingComponent;
 import pl.pateman.wiredi.testcomponents.HeavyInitComponent;
+import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.util.PackageScanner;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +23,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -153,6 +156,16 @@ public class DefaultWiringContextIntegrationTest {
 
         assertEquals(3L, beforeDestroy);
         assertEquals(0L, afterDestroy);
+    }
+
+    @Test
+    public void shouldReturnAllComponentsOfAGivenType() {
+        WiringContext wiringContext = givenContext();
+
+        Collection<RandomStringGenerator> generators = wiringContext.getWireComponentsOfType(RandomStringGenerator.class);
+
+        assertEquals(2, generators.size());
+        assertThat(generators, everyItem(instanceOf(RandomStringGenerator.class)));
     }
 
     private class HeavyComponentCallable implements Callable<HeavyInitComponent> {
