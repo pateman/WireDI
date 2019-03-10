@@ -1,5 +1,6 @@
 package pl.pateman.wiredi.dto;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,17 +8,25 @@ import java.util.List;
 
 public final class WireComponentInfo {
     private final Class<?> clz;
+    private final Method factoryMethod;
     private final boolean multipleAllowed;
     private WireConstructorInjectionInfo constructorInjectionInfo;
     private final List<WireFieldInjectionInfo> fieldInjectionInfo;
     private final List<WireSetterInjectionInfo> setterInjectionInfo;
     private WireLifecycleMethodsInfo lifecycleMethodsInfo;
+    private final List<String> factoryMethodParamsInfo;
 
     public WireComponentInfo(Class<?> clz, boolean multipleAllowed) {
+        this(clz, multipleAllowed, null);
+    }
+
+    public WireComponentInfo(Class<?> clz, boolean multipleAllowed, Method factoryMethod) {
         this.clz = clz;
         this.multipleAllowed = multipleAllowed;
+        this.factoryMethod = factoryMethod;
         fieldInjectionInfo = new ArrayList<>();
         setterInjectionInfo = new ArrayList<>();
+        factoryMethodParamsInfo = new ArrayList<>();
     }
 
     public Class<?> getClz() {
@@ -74,5 +83,21 @@ public final class WireComponentInfo {
 
     public void setLifecycleMethodsInfo(WireLifecycleMethodsInfo lifecycleMethodsInfo) {
         this.lifecycleMethodsInfo = lifecycleMethodsInfo;
+    }
+
+    public boolean hasFactoryMethod() {
+        return factoryMethod != null;
+    }
+
+    public Method getFactoryMethod() {
+        return factoryMethod;
+    }
+
+    public void addFactoryMethodParam(String wireName) {
+        factoryMethodParamsInfo.add(wireName);
+    }
+
+    public List<String> getFactoryMethodParamsInfo() {
+        return Collections.unmodifiableList(factoryMethodParamsInfo);
     }
 }

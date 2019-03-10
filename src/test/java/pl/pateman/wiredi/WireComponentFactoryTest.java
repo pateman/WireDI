@@ -5,6 +5,7 @@ import pl.pateman.wiredi.core.DefaultWireComponentFactory;
 import pl.pateman.wiredi.dto.*;
 import pl.pateman.wiredi.testcomponents.ComponentWithContextAsDependency;
 import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
+import pl.pateman.wiredi.testcomponents.Wirebox;
 import pl.pateman.wiredi.testcomponents.dto.User;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.LettersOnlyRandomStringGenerator;
@@ -13,11 +14,12 @@ import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Random;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static pl.pateman.wiredi.test.FieldValueInstanceOf.fieldValueInstanceOf;
 import static pl.pateman.wiredi.test.HasAssignedFields.hasAssignedFields;
 
@@ -75,6 +77,24 @@ public class WireComponentFactoryTest {
         return wireComponentInfo;
     }
 
+    private WireComponentInfo givenComponentWithFactoryMethod() {
+        try {
+            return new WireComponentInfo(Random.class, false, Wirebox.class.getDeclaredMethod("someRandom"));
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    private WireComponentInfo givenComponentWithFactoryMethodAndParameters() {
+        try {
+            WireComponentInfo wireComponentInfo = new WireComponentInfo(Wirebox.RequiresARandom.class, true, Wirebox.class.getDeclaredMethod("requiresARandom", Random.class));
+            wireComponentInfo.addFactoryMethodParam("java.util.Random");
+            return wireComponentInfo;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
     @Test
     public void shouldInstantiateATrivialComponent() {
         WireComponentInfo wireComponentInfo = new WireComponentInfo(TrivialComponent.class, false);
@@ -130,6 +150,23 @@ public class WireComponentFactoryTest {
         assertEquals("test", wireComponent.getTest());
     }
 
+    @Test
+    public void shouldInstantiateAComponentUsingFactoryMethod() {
+        WireComponentInfo wireComponentInfo = givenComponentWithFactoryMethod();
+        DefaultWireComponentFactory factory = givenFactory();
+
+        assertThat(factory.createWireComponent(wireComponentInfo), isA(Random.class));
+    }
+
+    @Test
+    public void shouldInstantiateAComponentUsingFactoryMethodWithParameters() {
+        WireComponentInfo wireComponentInfo = givenComponentWithFactoryMethodAndParameters();
+        DefaultWireComponentFactory factory = givenFactory();
+
+        Wirebox.RequiresARandom wireComponent = factory.createWireComponent(wireComponentInfo);
+        assertTrue(wireComponent.hasRandom());
+    }
+
     private class DummyWiringContext implements WiringContext {
 
         @Override
@@ -140,6 +177,9 @@ public class WireComponentFactoryTest {
             }
             if ("lettersOnlyRandomStringGenerator".equals(wireName)) {
                 return (T) new LettersOnlyRandomStringGenerator();
+            }
+            if ("java.util.Random".equals(wireName)) {
+                return (T) new Random();
             }
             return null;
         }

@@ -7,10 +7,7 @@ import pl.pateman.wiredi.core.DefaultWiringContext;
 import pl.pateman.wiredi.core.WireComponentInfoResolver;
 import pl.pateman.wiredi.core.WireComponentRegistry;
 import pl.pateman.wiredi.exception.DIException;
-import pl.pateman.wiredi.testcomponents.BeforeDestroyComponent;
-import pl.pateman.wiredi.testcomponents.FailingComponent;
-import pl.pateman.wiredi.testcomponents.HeavyInitComponent;
-import pl.pateman.wiredi.testcomponents.RandomStringGenerator;
+import pl.pateman.wiredi.testcomponents.*;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.util.PackageScanner;
@@ -26,8 +23,7 @@ import java.util.stream.IntStream;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class DefaultWiringContextIntegrationTest {
 
@@ -166,6 +162,15 @@ public class DefaultWiringContextIntegrationTest {
 
         assertEquals(2, generators.size());
         assertThat(generators, everyItem(instanceOf(RandomStringGenerator.class)));
+    }
+
+    @Test
+    public void shouldInstantiateAComponentFromWires() {
+        WiringContext wiringContext = givenContext();
+
+        Wirebox.RequiresARandom requiresARandom = wiringContext.getWireComponent("requiresARandom");
+        assertNotNull(requiresARandom);
+        assertTrue(requiresARandom.hasRandom());
     }
 
     private class HeavyComponentCallable implements Callable<HeavyInitComponent> {

@@ -75,6 +75,11 @@ public class ComponentWithContextAsDependency {
 }
 ```
 
+## `@Wires`
+Sometimes, you have classes in your application that you want to turn into wires, but cannot modify the source code to add the `@WireComponent` annotation. That's when the `@Wires` annotation comes into the mix. Create a new class, annotate it with this annotation and use static methods inside it to create wires (similar to Spring's `@Configuration`). Have a look at `pl.pateman.wiredi.testcomponents.Wirebox` to learn more.
+
+
+
 ## Documentation
 Currently there's no documentation, sorry. Feel free to have a look at the code and tests to figure out what's going under the hood. Don't worry - the code is pretty straight-forward. :)
 

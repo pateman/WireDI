@@ -100,8 +100,31 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
     }
 
     @SuppressWarnings("unchecked")
+    private <T> T instantiateFromFactoryMethod(WireComponentInfo wireComponentInfo) throws InvocationTargetException, IllegalAccessException {
+        Method method = wireComponentInfo.getFactoryMethod();
+        method.setAccessible(true);
+
+        List<String> factoryMethodParams = wireComponentInfo.getFactoryMethodParamsInfo();
+        if (!factoryMethodParams.isEmpty()) {
+            int numberOfParams = factoryMethodParams.size();
+            Object[] params = new Object[numberOfParams];
+
+            for (int i = 0; i < numberOfParams; i++) {
+                params[i] = getWireComponent(factoryMethodParams.get(i));
+            }
+            return (T) method.invoke(null, params);
+        }
+
+        return (T) method.invoke(null);
+    }
+
+    @SuppressWarnings("unchecked")
     private <T> T instantiate(WireComponentInfo wireComponentInfo)
             throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchFieldException {
+        if (wireComponentInfo.hasFactoryMethod()) {
+            return instantiateFromFactoryMethod(wireComponentInfo);
+        }
+
         if (!wireComponentInfo.hasConstructorInjection()) {
             return (T) instantiateClass(wireComponentInfo.getClz());
         }

@@ -1,5 +1,6 @@
 package pl.pateman.wiredi.core;
 
+import pl.pateman.wiredi.ComponentInfoResolver;
 import pl.pateman.wiredi.WireComponentFactory;
 import pl.pateman.wiredi.WiringContext;
 import pl.pateman.wiredi.dto.WireComponentInfo;
@@ -7,31 +8,53 @@ import pl.pateman.wiredi.exception.DIException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class DefaultWiringContext implements WiringContext {
-    private final WireComponentInfoResolver componentInfoResolver;
+    private final ComponentInfoResolver componentInfoResolver;
     private final WireComponentFactory componentFactory;
     private final WireComponentRegistry componentRegistry;
+    private final Map<String, Method> componentsInWires;
+    private final Map<Class<?>, String> componentInWiresMapping;
     private final Map<String, Class<?>> wireComponents;
     private final Map<String, Set<String>> componentHierarchy;
     private final Set<Class<?>> classesInWiring;
     private final Map<Class<?>, Object> locks;
 
-    public DefaultWiringContext(WireComponentInfoResolver componentInfoResolver, WireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
+    public DefaultWiringContext(ComponentInfoResolver componentInfoResolver, WireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
         this.componentInfoResolver = componentInfoResolver;
         this.componentFactory = componentFactory;
         this.componentFactory.assignWiringContext(this);
         this.componentRegistry = componentRegistry;
+
+        componentsInWires = WireComponentDiscovery.findWireComponentsInWires(scannedClasses);
+        componentInWiresMapping = prepareComponentsInWiresMapping();
         wireComponents = WireComponentDiscovery.findWireComponents(scannedClasses);
+        mergeComponents();
+
         componentHierarchy = WireComponentHierarchyDiscovery.findHierarchy(wireComponents);
         classesInWiring = ConcurrentHashMap.newKeySet();
         locks = new ConcurrentHashMap<>();
     }
 
+    private void mergeComponents() {
+        componentsInWires.forEach((k, v) -> wireComponents.put(k, v.getReturnType()));
+    }
+
+    private Map<Class<?>, String> prepareComponentsInWiresMapping() {
+        return componentsInWires.entrySet().stream()
+                .map(e -> new SimpleEntry<Class<?>, String>(e.getValue().getReturnType(), e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     private Class<?> resolveClassForWireName(String wireName) {
+        Method factoryMethod = componentsInWires.get(wireName);
+        if (factoryMethod != null) {
+            return factoryMethod.getReturnType();
+        }
         Class<?> clz = wireComponents.get(wireName);
         if (clz != null) {
             return clz;
@@ -96,7 +119,18 @@ public class DefaultWiringContext implements WiringContext {
             throw new DIException("Circular dependency on '" + clz + "' detected");
         }
 
-        WireComponentInfo componentInfo = componentInfoResolver.getComponentInfo(clz);
+        WireComponentInfo componentInfo;
+        String wiresMapping = componentInWiresMapping.get(clz);
+        if (wiresMapping != null) {
+            Method factoryMethod = componentsInWires.get(wiresMapping);
+            componentInfo = componentInfoResolver.getComponentInfo(factoryMethod);
+        } else {
+            componentInfo = componentInfoResolver.getComponentInfo(clz);
+        }
+        return wire(componentInfo);
+    }
+
+    private <T> T wire(WireComponentInfo componentInfo) {
         if (!componentInfo.isMultipleAllowed()) {
             return wireSingletonComponent(componentInfo);
         }

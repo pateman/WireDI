@@ -9,6 +9,7 @@ public final class WireComponentHierarchyDiscovery {
 
     private static List<Class<?>> computeHierarchy(Class<?> clz) {
         List<Class<?>> container = new ArrayList<>();
+        container.add(clz);
         while (true) {
             clz = clz.getSuperclass();
             if (clz == Object.class) {

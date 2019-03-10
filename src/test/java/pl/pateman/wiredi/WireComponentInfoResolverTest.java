@@ -8,6 +8,7 @@ import pl.pateman.wiredi.core.WireComponentInfoResolver;
 import pl.pateman.wiredi.dto.WireComponentInfo;
 import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.UserRegistry;
+import pl.pateman.wiredi.testcomponents.Wirebox;
 import pl.pateman.wiredi.testcomponents.dto.User;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.testcomponents.impl.GroupRegistryImpl;
@@ -15,6 +16,7 @@ import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.*;
@@ -90,6 +92,37 @@ public class WireComponentInfoResolverTest {
         assertEquals("postConstruct", componentInfo.getLifecycleMethodsInfo().getAfterInitMethod().getName());
         assertTrue(componentInfo.getLifecycleMethodsInfo().hasBeforeDestroy());
         assertEquals("preDestroy", componentInfo.getLifecycleMethodsInfo().getBeforeDestroyMethod().getName());
+    }
+
+    @Test
+    public void shouldResolveWireInfoForComponentInWires() throws NoSuchMethodException {
+        WireComponentInfoResolver resolver = givenResolver();
+
+        WireComponentInfo componentInfo = resolver.getComponentInfo(Wirebox.class.getDeclaredMethod("someRandom"));
+        assertTrue(componentInfo.hasFactoryMethod());
+        assertNotNull(componentInfo.getFactoryMethod());
+        assertEquals(Random.class, componentInfo.getClz());
+        assertFalse(componentInfo.isMultipleAllowed());
+    }
+
+    @Test
+    public void shouldResolveWireInfoWithParamsForComponentInWires() throws NoSuchMethodException {
+        WireComponentInfoResolver resolver = givenResolver();
+
+        WireComponentInfo componentInfo = resolver.getComponentInfo(Wirebox.class.getDeclaredMethod("requiresARandom", Random.class));
+        assertTrue(componentInfo.hasFactoryMethod());
+        assertNotNull(componentInfo.getFactoryMethod());
+        assertEquals(Wirebox.RequiresARandom.class, componentInfo.getClz());
+        assertTrue(componentInfo.isMultipleAllowed());
+        assertEquals(1, componentInfo.getFactoryMethodParamsInfo().size());
+        assertEquals("java.util.Random", componentInfo.getFactoryMethodParamsInfo().get(0));
+    }
+
+    @Test(expected = DIException.class)
+    public void shouldNotResolveWireInfoForUnannotatedComponentInWires() throws NoSuchMethodException {
+        WireComponentInfoResolver resolver = givenResolver();
+
+        resolver.getComponentInfo(Wirebox.class.getMethod("thisShouldNotBeDetected"));
     }
 
     private class ComponentWithAfterInit {

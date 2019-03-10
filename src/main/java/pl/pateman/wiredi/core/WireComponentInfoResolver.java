@@ -1,5 +1,6 @@
 package pl.pateman.wiredi.core;
 
+import pl.pateman.wiredi.ComponentInfoResolver;
 import pl.pateman.wiredi.annotation.Wire;
 import pl.pateman.wiredi.annotation.WireAfterInit;
 import pl.pateman.wiredi.annotation.WireBeforeDestroy;
@@ -15,7 +16,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public final class WireComponentInfoResolver {
+public final class WireComponentInfoResolver implements ComponentInfoResolver {
 
     private final Map<Class<?>, WireComponentInfo> componentInfo;
 
@@ -130,11 +131,29 @@ public final class WireComponentInfoResolver {
         wireComponentInfo.setLifecycleMethodsInfo(wireLifecycleMethodsInfo);
     }
 
+    private void determineFactoryMethodParameters(WireComponentInfo wireComponentInfo) {
+        Method factoryMethod = wireComponentInfo.getFactoryMethod();
+
+        Class<?>[] parameterTypes = factoryMethod.getParameterTypes();
+        Annotation[][] parameterAnnotations = factoryMethod.getParameterAnnotations();
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class<?> parameterType = parameterTypes[i];
+            Annotation[] annotation = parameterAnnotations[i];
+
+            wireComponentInfo.addFactoryMethodParam(WireNameResolver.resolve(parameterType, annotation));
+        }
+    }
+
     private void fillWireComponentInfo(WireComponentInfo wireComponentInfo) {
-        determineConstructorInjection(wireComponentInfo);
-        determineFieldInjection(wireComponentInfo);
-        determineSetterInjection(wireComponentInfo);
-        determineLifecycleMethods(wireComponentInfo);
+        if (wireComponentInfo.hasFactoryMethod()) {
+            determineFactoryMethodParameters(wireComponentInfo);
+        } else {
+            determineConstructorInjection(wireComponentInfo);
+            determineFieldInjection(wireComponentInfo);
+            determineSetterInjection(wireComponentInfo);
+            determineLifecycleMethods(wireComponentInfo);
+        }
     }
 
     private WireComponentInfo resolveWireComponentInfo(Class<?> componentClass) {
@@ -142,7 +161,21 @@ public final class WireComponentInfoResolver {
         if (wireComponent == null) {
             throw new DIException(componentClass + " is not annotated with WireComponent");
         }
-        WireComponentInfo wireComponentInfo = new WireComponentInfo(componentClass, wireComponent.multiple());
+
+        return createWireComponentInfo(componentClass, wireComponent.multiple(), null);
+    }
+
+    private WireComponentInfo resolveWireComponentInfo(Method factoryMethod) {
+        WireComponent wireComponent = factoryMethod.getAnnotation(WireComponent.class);
+        if (wireComponent == null) {
+            throw new DIException(factoryMethod + " is not annotated with WireComponent");
+        }
+
+        return createWireComponentInfo(factoryMethod.getReturnType(), wireComponent.multiple(), factoryMethod);
+    }
+
+    private WireComponentInfo createWireComponentInfo(Class<?> componentClass, boolean multiple, Method factoryMethod) {
+        WireComponentInfo wireComponentInfo = new WireComponentInfo(componentClass, multiple, factoryMethod);
         fillWireComponentInfo(wireComponentInfo);
 
         return wireComponentInfo;
@@ -156,4 +189,9 @@ public final class WireComponentInfoResolver {
         return componentInfo.computeIfAbsent(componentClass, this::resolveWireComponentInfo);
     }
 
+    @Override
+    public WireComponentInfo getComponentInfo(Method factoryMethod) {
+        Class<?> componentClass = factoryMethod.getReturnType();
+        return componentInfo.computeIfAbsent(componentClass, (clz) -> this.resolveWireComponentInfo(factoryMethod));
+    }
 }
