@@ -12,7 +12,7 @@ public final class WireComponentHierarchyDiscovery {
         container.add(clz);
         while (true) {
             clz = clz.getSuperclass();
-            if (clz == Object.class) {
+            if (clz == null || clz == Object.class) {
                 break;
             }
             container.add(clz);
