@@ -146,6 +146,7 @@ public class WireComponentFactoryTest {
         DefaultWireComponentFactory factory = givenFactory();
 
         ComponentWithAfterInit wireComponent = factory.createWireComponent(wireComponentInfo);
+        factory.invokeAfterInit(wireComponent, wireComponentInfo);
 
         assertEquals("test", wireComponent.getTest());
     }

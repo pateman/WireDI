@@ -145,7 +145,6 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
             T instance = instantiate(wireComponentInfo);
             injectFields(instance, wireComponentInfo);
             injectSetters(instance, wireComponentInfo);
-            runAfterInitMethod(instance, wireComponentInfo);
             return instance;
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchFieldException e) {
             throw new DIException(e);
@@ -157,5 +156,18 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
     @Override
     public void assignWiringContext(WiringContext wiringContext) {
         this.context = wiringContext;
+    }
+
+    @Override
+    public void invokeAfterInit(Object componentInstance, WireComponentInfo wireComponentInfo) {
+        if (componentInstance == null || wireComponentInfo == null) {
+            throw new IllegalArgumentException("Both an instance and a WireComponentInfo are required");
+        }
+
+        try {
+            runAfterInitMethod(componentInstance, wireComponentInfo);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new DIException(e);
+        }
     }
 }

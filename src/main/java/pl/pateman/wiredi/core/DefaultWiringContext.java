@@ -80,6 +80,7 @@ public class DefaultWiringContext implements WiringContext {
         T component = componentFactory.createWireComponent(componentInfo);
         componentRegistry.addInstance(componentInfo, component);
         classesInWiring.remove(componentInfo.getClz());
+        componentFactory.invokeAfterInit(component, componentInfo);
         return component;
     }
 
