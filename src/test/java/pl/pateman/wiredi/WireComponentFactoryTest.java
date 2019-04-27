@@ -199,6 +199,11 @@ public class WireComponentFactoryTest {
         public <T> Collection<T> getWireComponentsOfType(Class<T> clz) {
             return null;
         }
+
+        @Override
+        public void addSingletonWire(String wire, Object instance) {
+            //  Do nothing.
+        }
     }
 
     private class TrivialComponent {

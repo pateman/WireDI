@@ -49,7 +49,7 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
 
     private List<Field> getFields(Class<?> clz) {
         List<Field> fields = new ArrayList<>();
-        while (clz != Object.class) {
+        while (!clz.isInterface() && clz != Object.class) {
             fields.addAll(Arrays.asList(clz.getDeclaredFields()));
             clz = clz.getSuperclass();
         }
@@ -58,7 +58,7 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
 
     private List<Method> getDeclaredMethods(Class<?> clz) {
         List<Method> methods = new ArrayList<>();
-        while (clz != Object.class) {
+        while (!clz.isInterface() && clz != Object.class) {
             methods.addAll(Arrays.asList(clz.getDeclaredMethods()));
             clz = clz.getSuperclass();
         }
@@ -193,5 +193,12 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
     public WireComponentInfo getComponentInfo(Method factoryMethod) {
         Class<?> componentClass = factoryMethod.getReturnType();
         return componentInfo.computeIfAbsent(componentClass, (clz) -> this.resolveWireComponentInfo(factoryMethod));
+    }
+
+    @Override
+    public WireComponentInfo addSingletonWireComponentInfo(Class<?> componentClass) {
+        WireComponentInfo wireComponentInfo = createWireComponentInfo(componentClass, false, null);
+        componentInfo.putIfAbsent(componentClass, wireComponentInfo);
+        return wireComponentInfo;
     }
 }

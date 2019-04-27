@@ -171,6 +171,25 @@ public class DefaultWiringContext implements WiringContext {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void addSingletonWire(String wire, Object instance) {
+        Map<String, Class<?>> map = Collections.singletonMap(wire, instance.getClass());
+
+        wireComponents.putAll(map);
+        Map<String, Set<String>> hierarchy = WireComponentHierarchyDiscovery.findHierarchy(map);
+        componentHierarchy.putAll(hierarchy);
+
+        try {
+            for (String clzName : hierarchy.keySet()) {
+                Class<?> aClass = Class.forName(clzName);
+                WireComponentInfo componentInfo = componentInfoResolver.addSingletonWireComponentInfo(aClass);
+                componentRegistry.addInstance(componentInfo, instance);
+            }
+        } catch (ClassNotFoundException e) {
+            throw new DIException("Unable to add dynamic wire", e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getWireComponent(String wireName) {

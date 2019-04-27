@@ -8,4 +8,6 @@ public interface ComponentInfoResolver {
     WireComponentInfo getComponentInfo(Class<?> componentClass);
 
     WireComponentInfo getComponentInfo(Method factoryMethod);
+
+    WireComponentInfo addSingletonWireComponentInfo(Class<?> componentClass);
 }

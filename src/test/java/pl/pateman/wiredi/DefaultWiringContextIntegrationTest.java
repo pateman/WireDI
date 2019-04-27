@@ -9,6 +9,8 @@ import pl.pateman.wiredi.core.WireComponentRegistry;
 import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.*;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
+import pl.pateman.wiredi.testcomponents.dynamic.DynamicWire;
+import pl.pateman.wiredi.testcomponents.dynamic.DynamicWireInterface;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.util.PackageScanner;
 
@@ -171,6 +173,21 @@ public class DefaultWiringContextIntegrationTest {
         Wirebox.RequiresARandom requiresARandom = wiringContext.getWireComponent("requiresARandom");
         assertNotNull(requiresARandom);
         assertTrue(requiresARandom.hasRandom());
+    }
+
+    @Test
+    public void shouldDynamicallyAddWire() {
+        WiringContext wiringContext = givenContext();
+        DynamicWire dynamicWire = new DynamicWire(12);
+
+        wiringContext.addSingletonWire("dynamicWire", dynamicWire);
+        Object instance1 = wiringContext.getWireComponent("dynamicWire");
+        Object instance2 = wiringContext.getWireComponent(DynamicWireInterface.class);
+
+        assertNotNull(instance1);
+        assertNotNull(instance2);
+        assertEquals(dynamicWire, instance1);
+        assertEquals(dynamicWire, instance2);
     }
 
     private class HeavyComponentCallable implements Callable<HeavyInitComponent> {
