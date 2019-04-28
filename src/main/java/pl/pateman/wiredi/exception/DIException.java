@@ -1,6 +1,6 @@
 package pl.pateman.wiredi.exception;
 
-public final class DIException extends RuntimeException
+public class DIException extends RuntimeException
 {
    public DIException(String message)
    {

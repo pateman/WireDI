@@ -43,7 +43,7 @@ public static void scanForClasses() {
 }
 
 private WiringContext givenContext() {
-    WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
+    WireComponentInfoRegistry wireComponentInfoResolver = new WireComponentInfoRegistry();
     DefaultWireComponentFactory wireComponentFactory = new DefaultWireComponentFactory();
     WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
     return new DefaultWiringContext(wireComponentInfoResolver, wireComponentFactory,
@@ -78,7 +78,12 @@ public class ComponentWithContextAsDependency {
 ## `@Wires`
 Sometimes, you have classes in your application that you want to turn into wires, but cannot modify the source code to add the `@WireComponent` annotation. That's when the `@Wires` annotation comes into the mix. Create a new class, annotate it with this annotation and use static methods inside it to create wires (similar to Spring's `@Configuration`). Have a look at `pl.pateman.wiredi.testcomponents.Wirebox` to learn more.
 
+## Dynamic wiring
+It's also possible to dynamically add wires to the context. Dynamic wires are only injected using field injection. In order to mark a field for dynamic injection, use the `@Wire` annotation and set its `dynamic` attribute to `true`. The field will get set as soon as the wire becomes available.
 
+Dynamic wiring works for both singleton and multi-instance components. Have a look at `pl.pateman.wiredi.DefaultWiringContextIntegrationTest.shouldWireDynamicWire` to learn more.
+
+It's important to note that this feature should be used carefully, because it changes the state of instantiated components. Use with care.
 
 ## Documentation
 Currently there's no documentation, sorry. Feel free to have a look at the code and tests to figure out what's going under the hood. Don't worry - the code is pretty straight-forward. :)

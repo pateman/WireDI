@@ -4,13 +4,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.pateman.wiredi.core.DefaultWireComponentFactory;
 import pl.pateman.wiredi.core.DefaultWiringContext;
-import pl.pateman.wiredi.core.WireComponentInfoResolver;
+import pl.pateman.wiredi.core.WireComponentInfoRegistry;
 import pl.pateman.wiredi.core.WireComponentRegistry;
 import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.*;
 import pl.pateman.wiredi.testcomponents.circular.ComponentB;
+import pl.pateman.wiredi.testcomponents.dynamic.ComponentWithDynamicWire;
 import pl.pateman.wiredi.testcomponents.dynamic.DynamicWire;
 import pl.pateman.wiredi.testcomponents.dynamic.DynamicWireInterface;
+import pl.pateman.wiredi.testcomponents.dynamic.SingletonComponentWithDynamicWire;
 import pl.pateman.wiredi.testcomponents.impl.AlphanumericRandomStringGenerator;
 import pl.pateman.wiredi.util.PackageScanner;
 
@@ -22,8 +24,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.hamcrest.CoreMatchers.everyItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
@@ -38,7 +39,7 @@ public class DefaultWiringContextIntegrationTest {
     }
 
     private WiringContext givenContext() {
-        WireComponentInfoResolver wireComponentInfoResolver = new WireComponentInfoResolver();
+        WireComponentInfoRegistry wireComponentInfoResolver = new WireComponentInfoRegistry();
         DefaultWireComponentFactory wireComponentFactory = new DefaultWireComponentFactory();
         WireComponentRegistry wireComponentRegistry = new WireComponentRegistry();
         return new DefaultWiringContext(wireComponentInfoResolver, wireComponentFactory,
@@ -180,7 +181,7 @@ public class DefaultWiringContextIntegrationTest {
         WiringContext wiringContext = givenContext();
         DynamicWire dynamicWire = new DynamicWire(12);
 
-        wiringContext.addSingletonWire("dynamicWire", dynamicWire);
+        wiringContext.addDynamicWire("dynamicWire", dynamicWire);
         Object instance1 = wiringContext.getWireComponent("dynamicWire");
         Object instance2 = wiringContext.getWireComponent(DynamicWireInterface.class);
 
@@ -188,6 +189,38 @@ public class DefaultWiringContextIntegrationTest {
         assertNotNull(instance2);
         assertEquals(dynamicWire, instance1);
         assertEquals(dynamicWire, instance2);
+    }
+
+    @Test
+    public void shouldLocateDynamicWireByType() {
+        WiringContext wiringContext = givenContext();
+        DynamicWire dynamicWire = new DynamicWire(10);
+
+        wiringContext.addDynamicWire("wire", dynamicWire);
+        Collection<DynamicWireInterface> wires = wiringContext.getWireComponentsOfType(DynamicWireInterface.class);
+
+        assertThat(wires, hasItem(dynamicWire));
+    }
+
+    @Test
+    public void shouldWireDynamicWire() {
+        WiringContext wiringContext = givenContext();
+
+        SingletonComponentWithDynamicWire singleton = wiringContext.getWireComponent(SingletonComponentWithDynamicWire.class);
+        ComponentWithDynamicWire instance1 = wiringContext.getWireComponent(ComponentWithDynamicWire.class);
+        assertNull(singleton.getField());
+        assertNull(instance1.getWire());
+
+        DynamicWire dynamicWire = new DynamicWire(1992);
+        wiringContext.addDynamicWire("dynamicWire", dynamicWire);
+        ComponentWithDynamicWire instance2 = wiringContext.getWireComponent(ComponentWithDynamicWire.class);
+
+        assertNotNull(singleton.getField());
+        assertNotNull(instance1.getWire());
+        assertNotNull(instance2.getWire());
+        assertEquals(1992, ((DynamicWire) singleton.getField()).getValue());
+        assertEquals(dynamicWire, instance1.getWire());
+        assertEquals(dynamicWire, instance2.getWire());
     }
 
     private class HeavyComponentCallable implements Callable<HeavyInitComponent> {

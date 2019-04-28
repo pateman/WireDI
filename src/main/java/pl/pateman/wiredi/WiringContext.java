@@ -8,7 +8,7 @@ public interface WiringContext {
 
     <T> Collection<T> getWireComponentsOfType(Class<T> clz);
 
-    void addSingletonWire(String wire, Object instance);
+    void addDynamicWire(String wire, Object instance);
 
     void destroy();
 }

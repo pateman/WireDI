@@ -1,20 +1,24 @@
 package pl.pateman.wiredi.core;
 
-import pl.pateman.wiredi.ComponentInfoResolver;
+import pl.pateman.wiredi.ComponentInfoRegistry;
 import pl.pateman.wiredi.WireComponentFactory;
 import pl.pateman.wiredi.WiringContext;
 import pl.pateman.wiredi.dto.WireComponentInfo;
+import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
 import pl.pateman.wiredi.exception.DIException;
+import pl.pateman.wiredi.exception.WireNameClassResolveException;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 public class DefaultWiringContext implements WiringContext {
-    private final ComponentInfoResolver componentInfoResolver;
+    private final ComponentInfoRegistry componentInfoRegistry;
     private final WireComponentFactory componentFactory;
     private final WireComponentRegistry componentRegistry;
     private final Map<String, Method> componentsInWires;
@@ -24,8 +28,8 @@ public class DefaultWiringContext implements WiringContext {
     private final Set<Class<?>> classesInWiring;
     private final Map<Class<?>, Object> locks;
 
-    public DefaultWiringContext(ComponentInfoResolver componentInfoResolver, WireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
-        this.componentInfoResolver = componentInfoResolver;
+    public DefaultWiringContext(ComponentInfoRegistry componentInfoRegistry, WireComponentFactory componentFactory, WireComponentRegistry componentRegistry, List<Class<?>> scannedClasses) {
+        this.componentInfoRegistry = componentInfoRegistry;
         this.componentFactory = componentFactory;
         this.componentFactory.assignWiringContext(this);
         this.componentRegistry = componentRegistry;
@@ -47,7 +51,7 @@ public class DefaultWiringContext implements WiringContext {
     private Map<Class<?>, String> prepareComponentsInWiresMapping() {
         return componentsInWires.entrySet().stream()
                 .map(e -> new SimpleEntry<Class<?>, String>(e.getValue().getReturnType(), e.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private Class<?> resolveClassForWireName(String wireName) {
@@ -61,11 +65,11 @@ public class DefaultWiringContext implements WiringContext {
         }
         Set<String> hierarchy = componentHierarchy.get(wireName);
         if (hierarchy == null) {
-            throw new DIException("Unknown wire name '" + wireName + "'");
+            throw new WireNameClassResolveException("Unknown wire name '" + wireName + "'");
         }
 
         if (hierarchy.size() > 1) {
-            throw new DIException("Ambiguous wire name '" + wireName + "' - matches components: " + hierarchy);
+            throw new WireNameClassResolveException("Ambiguous wire name '" + wireName + "' - matches components: " + hierarchy);
         }
 
         return wireComponents.get(hierarchy.iterator().next());
@@ -124,9 +128,9 @@ public class DefaultWiringContext implements WiringContext {
         String wiresMapping = componentInWiresMapping.get(clz);
         if (wiresMapping != null) {
             Method factoryMethod = componentsInWires.get(wiresMapping);
-            componentInfo = componentInfoResolver.getComponentInfo(factoryMethod);
+            componentInfo = componentInfoRegistry.getComponentInfo(factoryMethod);
         } else {
-            componentInfo = componentInfoResolver.getComponentInfo(clz);
+            componentInfo = componentInfoRegistry.getComponentInfo(clz);
         }
         return wire(componentInfo);
     }
@@ -144,10 +148,10 @@ public class DefaultWiringContext implements WiringContext {
         Set<Class<?>> wiredClasses = componentRegistry.getComponentClasses();
         Set<WireComponentInfo> componentsWithBeforeDestroy = wiredClasses
                 .stream()
-                .map(componentInfoResolver::getComponentInfo)
+                .map(componentInfoRegistry::getComponentInfo)
                 .filter(WireComponentInfo::hasLifecycleMethods)
                 .filter(wireComponentInfo -> wireComponentInfo.getLifecycleMethodsInfo().hasBeforeDestroy())
-                .collect(Collectors.toSet());
+                .collect(toSet());
 
         for (WireComponentInfo componentInfo : componentsWithBeforeDestroy) {
             List<Object> componentsByClass = componentRegistry.getComponentsByClass(componentInfo.getClz());
@@ -168,11 +172,11 @@ public class DefaultWiringContext implements WiringContext {
                 .stream()
                 .map(this::getWireComponent)
                 .map(clz::cast)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Override
-    public void addSingletonWire(String wire, Object instance) {
+    public void addDynamicWire(String wire, Object instance) {
         Map<String, Class<?>> map = Collections.singletonMap(wire, instance.getClass());
 
         wireComponents.putAll(map);
@@ -182,11 +186,42 @@ public class DefaultWiringContext implements WiringContext {
         try {
             for (String clzName : hierarchy.keySet()) {
                 Class<?> aClass = Class.forName(clzName);
-                WireComponentInfo componentInfo = componentInfoResolver.addSingletonWireComponentInfo(aClass);
+                WireComponentInfo componentInfo = componentInfoRegistry.addDynamicWireComponentInfo(aClass);
                 componentRegistry.addInstance(componentInfo, instance);
             }
         } catch (ClassNotFoundException e) {
             throw new DIException("Unable to add dynamic wire", e);
+        }
+
+        wireDynamicFields(wire, instance);
+    }
+
+    private void wireDynamicFields(String wire, Object instance) {
+        Map<Class<?>, List<WireFieldInjectionInfo>> classesWithDynamicFields = componentInfoRegistry.getComponentsInfo(
+                wci -> wci.getFieldInjectionInfo().stream().anyMatch(WireFieldInjectionInfo::isDynamic)).stream()
+                .collect(toMap(WireComponentInfo::getClz, WireComponentInfo::getFieldInjectionInfo));
+
+        classesWithDynamicFields.forEach((clz, fieldInfo) -> {
+            List<Field> fieldsToSet = fieldInfo.stream()
+                    .filter(info -> wire.equals(info.getWireName()))
+                    .map(WireFieldInjectionInfo::getField)
+                    .collect(toList());
+            if (fieldsToSet.isEmpty()) {
+                return;
+            }
+
+            for (Object component : componentRegistry.getComponentsByClass(clz)) {
+                fieldsToSet.forEach(f -> wireField(component, f, instance));
+            }
+        });
+    }
+
+    private void wireField(Object component, Field field, Object value) {
+        try {
+            field.setAccessible(true);
+            field.set(component, value);
+        } catch (IllegalAccessException e) {
+            throw new DIException("Unable to wire dynamic field", e);
         }
     }
 

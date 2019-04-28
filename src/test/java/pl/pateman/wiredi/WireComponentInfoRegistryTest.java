@@ -4,7 +4,7 @@ import org.junit.Test;
 import pl.pateman.wiredi.annotation.WireAfterInit;
 import pl.pateman.wiredi.annotation.WireBeforeDestroy;
 import pl.pateman.wiredi.annotation.WireComponent;
-import pl.pateman.wiredi.core.WireComponentInfoResolver;
+import pl.pateman.wiredi.core.WireComponentInfoRegistry;
 import pl.pateman.wiredi.dto.WireComponentInfo;
 import pl.pateman.wiredi.exception.DIException;
 import pl.pateman.wiredi.testcomponents.UserRegistry;
@@ -15,30 +15,31 @@ import pl.pateman.wiredi.testcomponents.impl.GroupRegistryImpl;
 import pl.pateman.wiredi.testcomponents.impl.UserRegistryImpl;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.*;
 
-public class WireComponentInfoResolverTest {
+public class WireComponentInfoRegistryTest {
 
-    private WireComponentInfoResolver givenResolver() {
-        return new WireComponentInfoResolver();
+    private WireComponentInfoRegistry givenRegistry() {
+        return new WireComponentInfoRegistry();
     }
 
     @Test(expected = DIException.class)
     public void shouldThrowWhenClassIsNotAWireComponent() {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        resolver.getComponentInfo(User.class);
+        registry.getComponentInfo(User.class);
     }
 
     @Test
     public void shouldResolveWireInfoForComponentWithNoDependencies() {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(AlphanumericRandomStringGenerator.class);
+        WireComponentInfo componentInfo = registry.getComponentInfo(AlphanumericRandomStringGenerator.class);
 
         assertTrue(componentInfo.isMultipleAllowed());
         assertFalse(componentInfo.hasConstructorInjection());
@@ -48,9 +49,9 @@ public class WireComponentInfoResolverTest {
 
     @Test
     public void shouldResolveWireInfoForComponentWithConstructorInjection() {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(GroupRegistryImpl.class);
+        WireComponentInfo componentInfo = registry.getComponentInfo(GroupRegistryImpl.class);
 
         assertFalse(componentInfo.isMultipleAllowed());
         assertTrue(componentInfo.hasConstructorInjection());
@@ -63,9 +64,9 @@ public class WireComponentInfoResolverTest {
 
     @Test
     public void shouldResolveWireInfoForComponentWithFieldAndSetterInjection() {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(UserRegistryImpl.class);
+        WireComponentInfo componentInfo = registry.getComponentInfo(UserRegistryImpl.class);
 
         assertFalse(componentInfo.isMultipleAllowed());
         assertFalse(componentInfo.hasConstructorInjection());
@@ -83,9 +84,9 @@ public class WireComponentInfoResolverTest {
 
     @Test
     public void shouldResolveWireInfoForComponentWithLifecycleMethods() {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(ComponentWithBeforeDestroy.class);
+        WireComponentInfo componentInfo = registry.getComponentInfo(ComponentWithBeforeDestroy.class);
 
         assertTrue(componentInfo.hasLifecycleMethods());
         assertTrue(componentInfo.getLifecycleMethodsInfo().hasAfterInit());
@@ -96,9 +97,9 @@ public class WireComponentInfoResolverTest {
 
     @Test
     public void shouldResolveWireInfoForComponentInWires() throws NoSuchMethodException {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(Wirebox.class.getDeclaredMethod("someRandom"));
+        WireComponentInfo componentInfo = registry.getComponentInfo(Wirebox.class.getDeclaredMethod("someRandom"));
         assertTrue(componentInfo.hasFactoryMethod());
         assertNotNull(componentInfo.getFactoryMethod());
         assertEquals(Random.class, componentInfo.getClz());
@@ -107,9 +108,9 @@ public class WireComponentInfoResolverTest {
 
     @Test
     public void shouldResolveWireInfoWithParamsForComponentInWires() throws NoSuchMethodException {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        WireComponentInfo componentInfo = resolver.getComponentInfo(Wirebox.class.getDeclaredMethod("requiresARandom", Random.class));
+        WireComponentInfo componentInfo = registry.getComponentInfo(Wirebox.class.getDeclaredMethod("requiresARandom", Random.class));
         assertTrue(componentInfo.hasFactoryMethod());
         assertNotNull(componentInfo.getFactoryMethod());
         assertEquals(Wirebox.RequiresARandom.class, componentInfo.getClz());
@@ -120,9 +121,23 @@ public class WireComponentInfoResolverTest {
 
     @Test(expected = DIException.class)
     public void shouldNotResolveWireInfoForUnannotatedComponentInWires() throws NoSuchMethodException {
-        WireComponentInfoResolver resolver = givenResolver();
+        WireComponentInfoRegistry registry = givenRegistry();
 
-        resolver.getComponentInfo(Wirebox.class.getMethod("thisShouldNotBeDetected"));
+        registry.getComponentInfo(Wirebox.class.getMethod("thisShouldNotBeDetected"));
+    }
+
+    @Test
+    public void shouldReturnFilteredComponentInfo() {
+        WireComponentInfoRegistry registry = givenRegistry();
+
+        registry.getComponentInfo(UserRegistryImpl.class);
+        registry.getComponentInfo(GroupRegistryImpl.class);
+
+        Collection<WireComponentInfo> componentsInfo = registry.getComponentsInfo(
+                wci -> wci.getFieldInjectionInfo().stream().anyMatch(f -> "lettersOnlyRandomStringGenerator".equals(f.getWireName()))
+        );
+        assertEquals(1, componentsInfo.size());
+        assertEquals(UserRegistryImpl.class, componentsInfo.iterator().next().getClz());
     }
 
     private class ComponentWithAfterInit {

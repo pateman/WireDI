@@ -7,6 +7,7 @@ import pl.pateman.wiredi.dto.WireConstructorInjectionInfo;
 import pl.pateman.wiredi.dto.WireFieldInjectionInfo;
 import pl.pateman.wiredi.dto.WireSetterInjectionInfo;
 import pl.pateman.wiredi.exception.DIException;
+import pl.pateman.wiredi.exception.WireNameClassResolveException;
 import pl.pateman.wiredi.util.PrimitiveDefaults;
 import sun.misc.Unsafe;
 
@@ -39,10 +40,16 @@ public final class DefaultWireComponentFactory implements WireComponentFactory {
     }
 
     private void injectField(Object instance, WireFieldInjectionInfo fieldInjectionInfo) throws IllegalAccessException {
-        Object wireComponent = getWireComponent(fieldInjectionInfo.getWireName());
-        Field field = fieldInjectionInfo.getField();
-        field.setAccessible(true);
-        field.set(instance, wireComponent);
+        try {
+            Object wireComponent = getWireComponent(fieldInjectionInfo.getWireName());
+            Field field = fieldInjectionInfo.getField();
+            field.setAccessible(true);
+            field.set(instance, wireComponent);
+        } catch (WireNameClassResolveException ex) {
+            if (!fieldInjectionInfo.isDynamic()) {
+                throw ex;
+            }
+        }
     }
 
     private void injectSetter(Object instance, WireSetterInjectionInfo setterInjectionInfo) throws InvocationTargetException, IllegalAccessException {

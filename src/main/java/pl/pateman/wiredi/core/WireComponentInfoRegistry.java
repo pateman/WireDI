@@ -1,6 +1,6 @@
 package pl.pateman.wiredi.core;
 
-import pl.pateman.wiredi.ComponentInfoResolver;
+import pl.pateman.wiredi.ComponentInfoRegistry;
 import pl.pateman.wiredi.annotation.Wire;
 import pl.pateman.wiredi.annotation.WireAfterInit;
 import pl.pateman.wiredi.annotation.WireBeforeDestroy;
@@ -14,9 +14,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public final class WireComponentInfoResolver implements ComponentInfoResolver {
+public final class WireComponentInfoRegistry implements ComponentInfoRegistry {
 
     private final Map<Class<?>, WireComponentInfo> componentInfo;
 
@@ -88,9 +89,13 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
         List<WireFieldInjectionInfo> wireFieldInjectionInfoList = fields
                 .stream()
                 .filter(f -> f.isAnnotationPresent(Wire.class))
-                .map(f -> new WireFieldInjectionInfo(f, WireNameResolver.resolve(f)))
+                .map(f -> new WireFieldInjectionInfo(f, WireNameResolver.resolve(f), isDynamicWire(f)))
                 .collect(Collectors.toList());
         wireComponentInfo.addFieldInjectionInfo(wireFieldInjectionInfoList);
+    }
+
+    private boolean isDynamicWire(Field field) {
+        return field.getAnnotation(Wire.class).dynamic();
     }
 
     private void determineSetterInjection(WireComponentInfo wireComponentInfo) {
@@ -181,7 +186,7 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
         return wireComponentInfo;
     }
 
-    public WireComponentInfoResolver() {
+    public WireComponentInfoRegistry() {
         componentInfo = new ConcurrentHashMap<>();
     }
 
@@ -196,9 +201,16 @@ public final class WireComponentInfoResolver implements ComponentInfoResolver {
     }
 
     @Override
-    public WireComponentInfo addSingletonWireComponentInfo(Class<?> componentClass) {
+    public WireComponentInfo addDynamicWireComponentInfo(Class<?> componentClass) {
         WireComponentInfo wireComponentInfo = createWireComponentInfo(componentClass, false, null);
         componentInfo.putIfAbsent(componentClass, wireComponentInfo);
         return wireComponentInfo;
+    }
+
+    @Override
+    public Collection<WireComponentInfo> getComponentsInfo(Predicate<WireComponentInfo> predicate) {
+        return componentInfo.values().stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 }

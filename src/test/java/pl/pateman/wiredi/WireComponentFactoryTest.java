@@ -47,7 +47,7 @@ public class WireComponentFactoryTest {
     private WireComponentInfo givenUserRegistryWireInfo() {
         WireComponentInfo wireComponentInfo = new WireComponentInfo(UserRegistryImpl.class, false);
         try {
-            WireFieldInjectionInfo fieldInjectionInfo = new WireFieldInjectionInfo(UserRegistryImpl.class.getDeclaredField("firstNameGenerator"), "lettersOnlyRandomStringGenerator");
+            WireFieldInjectionInfo fieldInjectionInfo = new WireFieldInjectionInfo(UserRegistryImpl.class.getDeclaredField("firstNameGenerator"), "lettersOnlyRandomStringGenerator", false);
             WireSetterInjectionInfo setterInjectionInfo = new WireSetterInjectionInfo(UserRegistryImpl.class.getDeclaredMethod("setLastNameGenerator", RandomStringGenerator.class), "alphanumericRandomStringGenerator");
             wireComponentInfo.addFieldInjectionInfo(Collections.singletonList(fieldInjectionInfo));
             wireComponentInfo.addSetterInjectionInfo(Collections.singletonList(setterInjectionInfo));
@@ -201,7 +201,7 @@ public class WireComponentFactoryTest {
         }
 
         @Override
-        public void addSingletonWire(String wire, Object instance) {
+        public void addDynamicWire(String wire, Object instance) {
             //  Do nothing.
         }
     }
